@@ -1,221 +1,415 @@
 ﻿---
 import { getCollection } from 'astro:content';
 
-const comparisons = await getCollection('comparisons');
+const rawComparisons = await getCollection('comparisons');
+
+// Group granular tags into 7 top-level clusters to guarantee a single-line navigation
+function mapToCluster(cat: string = ''): string {
+  const c = cat.toLowerCase();
+  if (c.includes('ai') || c.includes('writing') || c.includes('copilot') || c.includes('cursor')) return 'AI & Code';
+  if (c.includes('database') || c.includes('api') || c.includes('orm') || c.includes('caching') || c.includes('backend')) return 'Databases & APIs';
+  if (c.includes('task') || c.includes('project') || c.includes('sprint') || c.includes('workspace') || c.includes('productivity') || c.includes('knowledge') || c.includes('messaging') || c.includes('newsletter') || c.includes('publishing')) return 'Productivity & PM';
+  if (c.includes('design') || c.includes('css') || c.includes('web') || c.includes('frontend')) return 'Design & Web';
+  if (c.includes('observability') || c.includes('monitoring') || c.includes('security') || c.includes('container') || c.includes('devops')) return 'Security & Ops';
+  if (c.includes('auth') || c.includes('payment') || c.includes('automation') || c.includes('internal') || c.includes('cloud') || c.includes('hosting')) return 'Dev & Cloud';
+  return 'Dev & Cloud';
+}
+
+const comparisons = rawComparisons.map(item => ({
+  ...item,
+  cluster: mapToCluster(item.data.category),
+}));
+
+const clusters = ['All', 'Dev & Cloud', 'AI & Code', 'Databases & APIs', 'Productivity & PM', 'Design & Web', 'Security & Ops'];
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>StackVersus — SaaS & AI Tool Benchmarks</title>
+    <title>StackVersus — Unbiased SaaS & Developer Benchmarks</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
     <style>
       :root {
-        --bg: #090d16;
-        --card-bg: rgba(18, 24, 38, 0.7);
-        --card-border: rgba(255, 255, 255, 0.08);
-        --text-primary: #f8fafc;
-        --text-secondary: #94a3b8;
-        --accent: #6366f1;
-        --accent-glow: rgba(99, 102, 241, 0.35);
+        --off-black: #0d100e;
+        --forest-emerald: #1B4D3E;
+        --cream-light: #FBF9F5;
+        --cream-body: #E7E3D8;
+        --cream-muted: #9E9B8F;
+        --sunset-coral: #FF5A36;
+        --coral-glow: rgba(255, 90, 54, 0.28);
+        --metallic-gold: #E5B869;
+        --gold-glow: rgba(229, 184, 105, 0.25);
+        --glass-surface: rgba(19, 27, 23, 0.65);
+        --glass-border: rgba(229, 184, 105, 0.15);
       }
 
-      * { box-sizing: border-box; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      
       body {
-        margin: 0;
         font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-        background-color: var(--bg);
-        color: var(--text-primary);
+        background-color: var(--off-black);
+        color: var(--cream-body);
         min-height: 100vh;
         overflow-x: hidden;
-        position: relative;
       }
 
-      /* Animated Generative Background Mesh */
+      /* Multi-Color Generative Glow */
       .ambient-glow {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        z-index: -1;
+        inset: 0;
+        z-index: 0;
         pointer-events: none;
+        overflow: hidden;
       }
 
-      .blob {
+      .glow-orb {
         position: absolute;
+        border-radius: 50%;
+        filter: blur(140px);
+        opacity: 0.38;
+      }
+      .orb-forest {
+        width: 650px;
+        height: 650px;
+        top: -120px;
+        left: -100px;
+        background: radial-gradient(circle, var(--forest-emerald), #0a1f18 70%);
+      }
+      .orb-gold {
+        width: 500px;
+        height: 500px;
+        top: 20%;
+        right: -80px;
+        background: radial-gradient(circle, var(--metallic-gold), #8f6b21 70%);
+        opacity: 0.22;
+      }
+      .orb-coral {
         width: 550px;
         height: 550px;
-        border-radius: 50%;
-        filter: blur(120px);
-        opacity: 0.45;
-        animation: float 14s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      .blob-1 { top: -100px; left: -100px; background: radial-gradient(circle, #4f46e5, #06b6d4); }
-      .blob-2 { bottom: -120px; right: -80px; background: radial-gradient(circle, #ec4899, #8b5cf6); animation-duration: 18s; }
-      .blob-3 { top: 40%; left: 35%; background: radial-gradient(circle, #3b82f6, #10b981); opacity: 0.25; animation-duration: 22s; }
-
-      @keyframes float {
-        0% { transform: translate(0, 0) scale(1); }
-        50% { transform: translate(60px, 40px) scale(1.1); }
-        100% { transform: translate(-40px, 80px) scale(0.95); }
+        bottom: -150px;
+        left: 30%;
+        background: radial-gradient(circle, var(--sunset-coral), #7d1c08 70%);
+        opacity: 0.18;
       }
 
-      .container {
-        max-width: 960px;
+      /* Ultra-Wide Fluid Container */
+      .viewport-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 94%;
+        max-width: 1680px;
         margin: 0 auto;
-        padding: 60px 24px 100px;
+        padding: 32px 0 80px;
       }
 
+      /* Minimal Compact Header */
       header {
         text-align: center;
-        margin-bottom: 50px;
+        max-width: 820px;
+        margin: 0 auto 24px;
       }
 
-      .tag {
-        display: inline-block;
-        padding: 6px 14px;
-        background: rgba(99, 102, 241, 0.15);
-        border: 1px solid rgba(99, 102, 241, 0.4);
-        color: #a5b4fc;
-        font-size: 0.82rem;
-        font-weight: 600;
-        border-radius: 20px;
-        letter-spacing: 0.05em;
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        background: rgba(255, 90, 54, 0.1);
+        border: 1px solid rgba(255, 90, 54, 0.3);
+        color: var(--sunset-coral);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
-        margin-bottom: 16px;
+        border-radius: 999px;
+        margin-bottom: 10px;
+      }
+
+      .badge-dot {
+        width: 6px;
+        height: 6px;
+        background: var(--sunset-coral);
+        border-radius: 50%;
+        box-shadow: 0 0 8px var(--sunset-coral);
       }
 
       h1 {
-        font-size: clamp(2.2rem, 5vw, 3.2rem);
-        font-weight: 800;
-        margin: 0 0 16px;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: clamp(1.8rem, 3.2vw, 2.5rem);
+        font-weight: 700;
         line-height: 1.15;
-        background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+        color: var(--cream-light);
+        margin-bottom: 8px;
+        letter-spacing: -0.01em;
+      }
+
+      h1 span.accent-gradient {
+        background: linear-gradient(135deg, var(--cream-light) 40%, var(--metallic-gold) 85%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
 
       header p {
-        color: var(--text-secondary);
-        font-size: 1.1rem;
-        max-width: 580px;
+        color: var(--cream-muted);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        max-width: 640px;
         margin: 0 auto;
       }
 
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-        gap: 22px;
+      /* Strictly Single-Line Filter Nav */
+      .nav-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+        width: 100%;
       }
 
+      .filter-bar {
+        display: inline-flex;
+        flex-direction: row;
+        flex-wrap: nowrap; /* Forces exactly 1 line */
+        align-items: center;
+        gap: 6px;
+        padding: 5px 8px;
+        background: rgba(19, 27, 23, 0.6);
+        border: 1px solid rgba(229, 184, 105, 0.15);
+        border-radius: 999px;
+        backdrop-filter: blur(14px);
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: none; /* Hide default scrollbar on Firefox */
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+      }
+
+      .filter-bar::-webkit-scrollbar {
+        display: none; /* Hide scrollbar on Chrome/Safari */
+      }
+
+      .filter-pill {
+        padding: 7px 16px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        background: transparent;
+        border: 1px solid transparent;
+        color: var(--cream-muted);
+        cursor: pointer;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        flex-shrink: 0;
+      }
+
+      .filter-pill:hover {
+        color: var(--cream-light);
+        background: rgba(27, 77, 62, 0.35);
+        border-color: rgba(229, 184, 105, 0.25);
+      }
+
+      .filter-pill.active {
+        background: var(--forest-emerald);
+        color: var(--cream-light);
+        border-color: var(--metallic-gold);
+        box-shadow: 0 2px 14px var(--gold-glow);
+      }
+
+      /* Full Width 3-4 Column Grid */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 20px;
+      }
+
+      /* Glassmorphic Forest & Gold Comparison Card */
       .card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
+        background: var(--glass-surface);
+        border: 1px solid var(--glass-border);
         border-radius: 16px;
-        padding: 24px;
+        padding: 22px;
         text-decoration: none;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease;
-        position: relative;
-        overflow: hidden;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
+                    border-color 0.28s ease, 
+                    box-shadow 0.28s ease;
       }
 
       .card::before {
         content: '';
         position: absolute;
-        inset: 0;
-        border-radius: 16px;
-        padding: 1px;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent 70%);
-        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-        -webkit-mask-composite: xor;
-        mask-composite: exclude;
-        pointer-events: none;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--metallic-gold), transparent);
+        opacity: 0;
+        transition: opacity 0.28s ease;
       }
 
       .card:hover {
-        transform: translateY(-6px);
-        border-color: rgba(99, 102, 241, 0.4);
-        box-shadow: 0 16px 32px -8px var(--accent-glow);
+        transform: translateY(-5px);
+        border-color: rgba(229, 184, 105, 0.45);
+        box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.6), 
+                    0 0 20px var(--gold-glow);
       }
 
-      .card-category {
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: #38bdf8;
+      .card:hover::before {
+        opacity: 1;
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         margin-bottom: 12px;
       }
 
-      .card h2 {
-        font-size: 1.25rem;
+      .card-category {
+        font-size: 0.72rem;
         font-weight: 700;
-        color: #ffffff;
-        margin: 0 0 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--metallic-gold);
+        background: rgba(229, 184, 105, 0.1);
+        padding: 3px 8px;
+        border-radius: 5px;
+        border: 1px solid rgba(229, 184, 105, 0.2);
+      }
+
+      .status-indicator {
+        font-size: 0.72rem;
+        color: var(--cream-muted);
+      }
+
+      .card h2 {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.18rem;
+        font-weight: 700;
+        color: var(--cream-light);
+        margin: 0 0 10px;
         line-height: 1.35;
       }
 
       .card p {
-        color: var(--text-secondary);
-        font-size: 0.92rem;
+        color: var(--cream-muted);
+        font-size: 0.88rem;
         line-height: 1.55;
-        margin: 0 0 20px;
+        margin-bottom: 20px;
         flex-grow: 1;
       }
 
-      .cta-link {
-        font-size: 0.88rem;
-        font-weight: 600;
-        color: #818cf8;
+      .card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 14px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .cta-text {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--sunset-coral);
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        transition: gap 0.2s ease;
+        transition: gap 0.2s ease, transform 0.2s ease;
       }
 
-      .card:hover .cta-link {
+      .card:hover .cta-text {
         gap: 10px;
-        color: #a5b4fc;
+        transform: translateX(3px);
+      }
+
+      @media (max-width: 768px) {
+        .viewport-wrapper { width: 92%; padding-top: 24px; }
+        .grid { grid-template-columns: 1fr; }
       }
     </style>
   </head>
   <body>
-    <!-- Generative Motion Background -->
     <div class="ambient-glow">
-      <div class="blob blob-1"></div>
-      <div class="blob blob-2"></div>
-      <div class="blob blob-3"></div>
+      <div class="glow-orb orb-forest"></div>
+      <div class="glow-orb orb-gold"></div>
+      <div class="glow-orb orb-coral"></div>
     </div>
 
-    <div class="container">
+    <div class="viewport-wrapper">
       <header>
-        <span class="tag">⚡ Unbiased Automated Benchmarks</span>
-        <h1>Compare Top Tools.<br/>Decide with Precision.</h1>
-        <p>In-depth, data-driven software head-to-heads to upgrade your stack without the sales fluff.</p>
+        <div class="badge">
+          <span class="badge-dot"></span>
+          Benchmark Engine
+        </div>
+        <h1>
+          Compare Top Tools. <span class="accent-gradient">Decide with Precision.</span>
+        </h1>
+        <p>Unbiased data-driven benchmarks, feature comparisons, and pricing audits to optimize your stack.</p>
       </header>
 
-      <div class="grid">
+      <!-- Clean 1-Line Categorized Filter Strip -->
+      <div class="nav-container">
+        <nav class="filter-bar" aria-label="Category Filter">
+          {clusters.map((cluster, i) => (
+            <button class={`filter-pill ${i === 0 ? 'active' : ''}`} data-cluster={cluster}>
+              {cluster}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <!-- Max-Width Grid -->
+      <main class="grid" id="comparisons-grid">
         {comparisons.map(item => (
-          <a href={`/comparisons/${item.id.replace(/\.md$/, '')}`} class="card">
+          <a 
+            href={`/comparisons/${item.id.replace(/\.md$/, '')}`} 
+            class="card"
+            data-cluster={item.cluster}
+          >
             <div>
-              <div class="card-category">{item.data.category || 'Software Comparison'}</div>
+              <div class="card-header">
+                <span class="card-category">{item.data.category || 'Benchmark'}</span>
+                <span class="status-indicator">Verified</span>
+              </div>
               <h2>{item.data.title}</h2>
               <p>{item.data.description}</p>
             </div>
-            <span class="cta-link">Read Breakdown <span>→</span></span>
+            <div class="card-footer">
+              <span class="cta-text">Read Breakdown <span>→</span></span>
+            </div>
           </a>
         ))}
-      </div>
+      </main>
     </div>
+
+    <script>
+      const buttons = document.querySelectorAll('.filter-pill');
+      const cards = document.querySelectorAll<HTMLElement>('.card');
+
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          const selectedCluster = btn.getAttribute('data-cluster');
+
+          cards.forEach(card => {
+            const cardCluster = card.getAttribute('data-cluster');
+            if (selectedCluster === 'All' || cardCluster === selectedCluster) {
+              card.style.display = 'flex';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        });
+      });
+    </script>
   </body>
 </html>
