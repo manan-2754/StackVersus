@@ -11,6 +11,11 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
+
+// Extract tool names
+const slugParts = (entry.data.slug || entry.id.replace(/\.md$/, '')).split('-vs-');
+const toolA = entry.data.tool_a || (slugParts[0] ? slugParts[0].replace(/-/g, ' ').toUpperCase() : 'TOOL A');
+const toolB = entry.data.tool_b || (slugParts[1] ? slugParts[1].replace(/-/g, ' ').toUpperCase() : 'TOOL B');
 ---
 
 <html lang="en">
@@ -21,255 +26,485 @@ const { Content } = await render(entry);
     <meta name="description" content={entry.data.description} />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    
     <style is:global>
       :root {
-        --off-black: #0d100e;
-        --forest-deep: #132a21;
-        --forest-emerald: #1B4D3E;
-        --cream-light: #FBF9F5;
-        --cream-body: #E7E3D8;
-        --cream-muted: #9E9B8F;
-        --sunset-coral: #FF5A36;
-        --coral-glow: rgba(255, 90, 54, 0.28);
-        --metallic-gold: #E5B869;
-        --gold-glow: rgba(229, 184, 105, 0.22);
-        --glass-surface: rgba(19, 27, 23, 0.72);
-        --glass-border: rgba(229, 184, 105, 0.18);
+        --z-black: #060707;
+        --z-card: rgba(14, 16, 15, 0.72);
+        --z-card-hover: rgba(22, 26, 24, 0.85);
+        --z-border: rgba(255, 255, 255, 0.08);
+        --z-border-glow: rgba(34, 229, 118, 0.4);
+        --z-lime: #22E576;
+        --z-lime-glow: rgba(34, 229, 118, 0.35);
+        --z-coral: #FF385C;
+        --z-gold: #FFC043;
+        --z-text: #F2F2F2;
+        --z-muted: #8E928E;
       }
 
       * { box-sizing: border-box; margin: 0; padding: 0; }
 
       body {
-        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-        background-color: var(--off-black);
-        color: var(--cream-body);
-        line-height: 1.8;
+        font-family: 'Inter', sans-serif;
+        background-color: var(--z-black);
+        color: var(--z-text);
         min-height: 100vh;
         overflow-x: hidden;
       }
 
-      /* Ambient Background Glow */
-      .ambient-glow {
+      /* Fullscreen Interactive WebGL/Canvas Wave Ribbon */
+      #zajno-motion-canvas {
         position: fixed;
         inset: 0;
+        width: 100vw;
+        height: 100vh;
         z-index: 0;
         pointer-events: none;
-        overflow: hidden;
       }
-      .glow-orb {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(140px);
-        opacity: 0.38;
-      }
-      .orb-forest { width: 700px; height: 700px; top: -120px; left: -100px; background: radial-gradient(circle, var(--forest-emerald), #0a1f18 70%); }
-      .orb-gold { width: 500px; height: 500px; top: 30%; right: -100px; background: radial-gradient(circle, var(--metallic-gold), #8f6b21 70%); opacity: 0.2; }
-      .orb-coral { width: 550px; height: 550px; bottom: -150px; left: 25%; background: radial-gradient(circle, var(--sunset-coral), #7d1c08 70%); opacity: 0.16; }
 
-      /* Full Widescreen Layout (matches index width) */
-      .content-wrapper {
+      /* Screen Space Widescreen Layout */
+      .viewport-wrapper {
         position: relative;
         z-index: 1;
-        width: 94%;
-        max-width: 1400px;
+        width: 95%;
+        max-width: 1720px;
         margin: 0 auto;
-        padding: 32px 0 90px;
-        animation: pageFadeIn 0.4s ease-out;
+        padding: 28px 0 100px;
       }
 
-      /* Back Navigation Button */
-      .back-nav {
-        margin-bottom: 24px;
+      /* Top HUD Bar (Identical to Main Page) */
+      .hud-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--z-border);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.76rem;
+        color: var(--z-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
       }
 
-      .back-button {
+      .hud-live {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--z-lime);
+      }
+      .hud-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--z-lime);
+        box-shadow: 0 0 10px var(--z-lime);
+        animation: pulse 1.8s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.8); }
+      }
+
+      /* Subnav / Back Action */
+      .subnav {
+        margin: 32px 0 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .back-btn {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 8px 20px;
-        background: rgba(27, 77, 62, 0.35);
-        border: 1px solid rgba(229, 184, 105, 0.25);
-        border-radius: 999px;
-        color: var(--cream-light);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #ffffff;
         text-decoration: none;
-        font-weight: 600;
-        font-size: 0.84rem;
-        backdrop-filter: blur(12px);
+        padding: 8px 20px;
+        border-radius: 999px;
+        background: rgba(14, 18, 16, 0.8);
+        border: 1px solid var(--z-border);
+        backdrop-filter: blur(16px);
         transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       }
-
-      .back-button:hover {
-        background: var(--forest-emerald);
-        border-color: var(--metallic-gold);
-        box-shadow: 0 4px 18px var(--gold-glow);
+      .back-btn:hover {
+        background: var(--z-lime);
+        color: #000000;
+        border-color: var(--z-lime);
+        box-shadow: 0 0 18px var(--z-lime-glow);
         transform: translateX(-4px);
+      }
+
+      .spec-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        color: var(--z-lime);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      /* Editorial Glass Panel with Zajno Styling */
+      .editorial-workspace {
+        background: var(--z-card);
+        border: 1px solid var(--z-border);
+        border-radius: 22px;
+        padding: clamp(32px, 4vw, 64px);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
+      }
+
+      /* Hero Title in Main-Page Syne Typography */
+      .editorial-workspace h1 {
+        font-family: 'Syne', sans-serif;
+        font-size: clamp(2.4rem, 4.8vw, 4.4rem);
+        font-weight: 800;
+        line-height: 1.08;
+        letter-spacing: -0.04em;
+        text-transform: uppercase;
         color: #ffffff;
-      }
-
-      /* Main Article Glass Container */
-      article {
-        background: var(--glass-surface);
-        border: 1px solid var(--glass-border);
-        border-radius: 24px;
-        padding: clamp(28px, 4vw, 54px);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), 0 0 25px rgba(229, 184, 105, 0.08);
-      }
-
-      /* Headers */
-      article h1 {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: clamp(2.2rem, 3.8vw, 3.2rem);
-        font-weight: 700;
-        color: var(--cream-light);
-        line-height: 1.2;
         margin-bottom: 24px;
-        letter-spacing: -0.01em;
       }
 
-      article h2 {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: clamp(1.4rem, 2.2vw, 1.85rem);
-        color: var(--cream-light);
-        margin: 40px 0 16px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid rgba(229, 184, 105, 0.2);
+      .editorial-workspace h1 .kinetic-accent {
+        background: linear-gradient(90deg, #FFFFFF 10%, var(--z-lime) 50%, var(--z-coral) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
       }
 
-      article h3 {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 1.3rem;
-        color: var(--metallic-gold);
-        margin: 28px 0 12px;
+      .editorial-workspace h2 {
+        font-family: 'Syne', sans-serif;
+        font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: -0.02em;
+        color: #ffffff;
+        margin: 44px 0 18px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--z-border);
       }
 
-      article p {
-        margin-bottom: 16px;
-        color: var(--cream-body);
-        font-size: 1.02rem;
+      .editorial-workspace h3 {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--z-lime);
+        margin: 32px 0 12px;
       }
 
-      /* Quick Verdict Quote / Callout Block */
-      article blockquote {
-        background: linear-gradient(135deg, rgba(27, 77, 62, 0.45), rgba(19, 42, 33, 0.6));
-        border-left: 4px solid var(--sunset-coral);
+      .editorial-workspace p {
+        font-size: 1.04rem;
+        color: var(--z-text);
+        line-height: 1.7;
+        margin-bottom: 18px;
+      }
+
+      /* Quick Verdict Quote with Lime Neon Strip */
+      .editorial-workspace blockquote {
+        background: linear-gradient(135deg, rgba(34, 229, 118, 0.1), rgba(14, 18, 16, 0.8));
+        border-left: 4px solid var(--z-lime);
         border-radius: 12px;
-        margin: 24px 0 32px;
-        padding: 20px 26px;
-        font-size: 1.1rem;
-        color: var(--cream-light);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+        margin: 28px 0 38px;
+        padding: 24px 30px;
+        font-size: 1.15rem;
+        color: #ffffff;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
       }
 
-      /* Widescreen Comparison Table */
-      article table {
+      /* Full Widescreen Tabular Feature Comparison */
+      .editorial-workspace table {
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
-        margin: 32px 0 40px;
+        margin: 32px 0 44px;
         border-radius: 16px;
         overflow: hidden;
-        border: 1px solid rgba(229, 184, 105, 0.25);
-        background: rgba(14, 20, 17, 0.65);
+        border: 1px solid var(--z-border);
+        background: rgba(10, 12, 11, 0.7);
       }
 
-      article th, article td {
-        padding: 16px 22px;
+      .editorial-workspace th, .editorial-workspace td {
+        padding: 18px 24px;
         text-align: left;
+        vertical-align: top;
       }
 
-      article th {
-        background: rgba(27, 77, 62, 0.65);
-        color: var(--metallic-gold);
+      .editorial-workspace th {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--z-lime);
+        font-family: 'JetBrains Mono', monospace;
         font-weight: 700;
-        font-size: 0.95rem;
-        letter-spacing: 0.04em;
+        font-size: 0.82rem;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        border-bottom: 1px solid rgba(229, 184, 105, 0.25);
+        border-bottom: 1px solid var(--z-border);
       }
 
-      article td {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        color: var(--cream-body);
-        font-size: 0.98rem;
+      .editorial-workspace td {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        font-size: 0.96rem;
       }
 
-      article tr:last-child td {
-        border-bottom: none;
-      }
+      .editorial-workspace tr:last-child td { border-bottom: none; }
+      .editorial-workspace tr:hover td { background: rgba(34, 229, 118, 0.03); }
 
-      article tr:hover td {
-        background: rgba(229, 184, 105, 0.05);
-      }
-
-      /* External & Affiliate Action Links (Sunset Coral) */
-      article a {
-        color: var(--sunset-coral);
-        text-decoration: none;
+      /* Action / Affiliate CTAs */
+      .editorial-workspace a {
+        color: var(--z-coral);
         font-weight: 700;
-        transition: color 0.2s ease, text-shadow 0.2s ease;
+        text-decoration: none;
+        transition: color 0.2s ease;
       }
-
-      article a:hover {
-        color: #ff7e62;
+      .editorial-workspace a:hover {
+        color: #ff607f;
         text-decoration: underline;
-        text-shadow: 0 0 10px var(--coral-glow);
       }
 
-      /* Lists & Pros/Cons */
-      article ul, article ol {
+      /* Side-by-Side Pros/Cons Comparison Matrix */
+      .comparison-matrix {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin: 32px 0 44px;
+      }
+
+      .matrix-card {
+        background: rgba(18, 22, 20, 0.7);
+        border: 1px solid var(--z-border);
+        border-radius: 16px;
+        padding: 26px;
+        transition: transform 0.25s ease, border-color 0.25s ease;
+      }
+      .matrix-card:hover {
+        border-color: var(--z-border-glow);
+        transform: translateY(-4px);
+      }
+
+      .matrix-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #ffffff;
+        margin-bottom: 6px;
+      }
+
+      .matrix-tagline {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.82rem;
+        color: var(--z-muted);
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--z-border);
+      }
+
+      .matrix-section-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin: 16px 0 10px;
+      }
+      .matrix-section-title.pros { color: var(--z-lime); }
+      .matrix-section-title.cons { color: var(--z-coral); }
+
+      .matrix-list {
+        list-style: none !important;
+        padding-left: 0 !important;
+        margin-bottom: 16px !important;
+      }
+
+      .matrix-list li {
+        position: relative;
         padding-left: 24px;
-        margin-bottom: 24px;
-      }
-
-      article li {
         margin-bottom: 10px;
-        color: var(--cream-body);
+        font-size: 0.94rem;
+        color: var(--z-text);
       }
 
-      article li strong {
-        color: var(--cream-light);
+      .matrix-list.pros li::before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: var(--z-lime);
+        font-weight: 800;
       }
 
-      article hr {
-        border: none;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
-        margin: 40px 0;
+      .matrix-list.cons li::before {
+        content: "✕";
+        position: absolute;
+        left: 0;
+        color: var(--z-coral);
+        font-weight: 800;
       }
 
-      @keyframes pageFadeIn {
-        from { opacity: 0; transform: translateY(14px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-
-      @media (max-width: 768px) {
-        .content-wrapper { width: 92%; }
-        article { padding: 24px 18px; }
-        article table { font-size: 0.88rem; }
-        article th, article td { padding: 12px 14px; }
+      @media (max-width: 850px) {
+        .comparison-matrix { grid-template-columns: 1fr; }
+        .viewport-wrapper { width: 92%; }
+        .editorial-workspace { padding: 24px 18px; }
       }
     </style>
   </head>
   <body>
-    <div class="ambient-glow">
-      <div class="glow-orb orb-forest"></div>
-      <div class="glow-orb orb-gold"></div>
-      <div class="glow-orb orb-coral"></div>
-    </div>
+    <!-- Motion Zajno Interactive Kinetic Vector Ribbon Canvas -->
+    <canvas id="zajno-motion-canvas"></canvas>
 
-    <div class="content-wrapper">
-      <nav class="back-nav">
-        <a href="/" class="back-button">
+    <div class="viewport-wrapper">
+      <!-- Standardized HUD Topbar across both views -->
+      <div class="hud-topbar">
+        <div class="hud-live">
+          <span class="hud-dot"></span>
+          StackVersus // Kinetic System 2.0
+        </div>
+        <div>Engine: StackVersus Matrix</div>
+        <div>State: 60 FPS Accelerated</div>
+      </div>
+
+      <nav class="subnav">
+        <a href="/" class="back-btn">
           <span>←</span>
           <span>Back to All Comparisons</span>
         </a>
+        <div class="spec-tag">
+          // HEAD-TO-HEAD MATRIX: {toolA} VS {toolB}
+        </div>
       </nav>
 
-      <article>
+      <main class="editorial-workspace" id="markdown-content">
         <Content />
-      </article>
+      </main>
     </div>
+
+    <!-- Client-Side Transformer: Matrix Layout + Kinetic Ribbon Engine -->
+    <script>
+      // 1. Zajno Ribbon Wave Simulation
+      const canvas = document.getElementById('zajno-motion-canvas') as HTMLCanvasElement;
+      const ctx = canvas.getContext('2d')!;
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      let mouseX = window.innerWidth / 2;
+      let mouseY = window.innerHeight / 2;
+      window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      });
+
+      let time = 0;
+      function renderRibbon() {
+        ctx.fillStyle = '#060707';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        time += 0.016;
+
+        const normY = mouseY / canvas.height;
+
+        const ribbons = [
+          { color: '#22E576', alpha: 0.35, width: 2.5, speed: 1.0, freq: 0.002, amp: 90 },
+          { color: '#FF385C', alpha: 0.28, width: 2.0, speed: 1.3, freq: 0.0025, amp: 120 },
+        ];
+
+        ribbons.forEach((ribbon, i) => {
+          ctx.beginPath();
+          ctx.strokeStyle = ribbon.color;
+          ctx.lineWidth = ribbon.width;
+          ctx.globalAlpha = ribbon.alpha;
+
+          for (let x = 0; x < canvas.width; x += 8) {
+            const dynamicAmp = ribbon.amp * (0.8 + normY * 0.6);
+            const y = (canvas.height * 0.5) + 
+                      Math.sin(x * ribbon.freq + time * ribbon.speed + i) * dynamicAmp * Math.cos(time * 0.4 + i);
+
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        });
+
+        requestAnimationFrame(renderRibbon);
+      }
+      renderRibbon();
+
+      // 2. Tabular Pros & Cons Transformer
+      const contentRoot = document.getElementById('markdown-content');
+      if (contentRoot) {
+        // Upgrade primary H1 to have the kinetic gradient style
+        const h1 = contentRoot.querySelector('h1');
+        if (h1 && !h1.querySelector('.kinetic-accent')) {
+          const text = h1.textContent || '';
+          if (text.includes(':')) {
+            const [first, rest] = text.split(':');
+            h1.innerHTML = `${first}: <span class="kinetic-accent">${rest}</span>`;
+          }
+        }
+
+        const h3s = Array.from(contentRoot.querySelectorAll('h3'));
+        if (h3s.length >= 2) {
+          const matrixContainer = document.createElement('div');
+          matrixContainer.className = 'comparison-matrix';
+
+          h3s.slice(0, 2).forEach(h3 => {
+            const card = document.createElement('div');
+            card.className = 'matrix-card';
+
+            const title = document.createElement('div');
+            title.className = 'matrix-title';
+            title.textContent = h3.textContent;
+            card.appendChild(title);
+
+            let next = h3.nextElementSibling;
+            while (next && next.tagName !== 'H3' && next.tagName !== 'H2') {
+              const current = next;
+              next = current.nextElementSibling;
+
+              if (current.tagName === 'P' && current.querySelector('em')) {
+                current.className = 'matrix-tagline';
+                card.appendChild(current);
+              } else if (current.tagName === 'P' && current.textContent?.includes('Pros:')) {
+                const prosTitle = document.createElement('div');
+                prosTitle.className = 'matrix-section-title pros';
+                prosTitle.textContent = 'Pros';
+                card.appendChild(prosTitle);
+                current.remove();
+              } else if (current.tagName === 'P' && current.textContent?.includes('Cons:')) {
+                const consTitle = document.createElement('div');
+                consTitle.className = 'matrix-section-title cons';
+                consTitle.textContent = 'Cons';
+                card.appendChild(consTitle);
+                current.remove();
+              } else if (current.tagName === 'UL') {
+                const prev = card.lastElementChild;
+                if (prev?.classList.contains('cons')) {
+                  current.className = 'matrix-list cons';
+                } else {
+                  current.className = 'matrix-list pros';
+                }
+                card.appendChild(current);
+              }
+            }
+
+            h3.remove();
+            matrixContainer.appendChild(card);
+          });
+
+          const detailedH2 = Array.from(contentRoot.querySelectorAll('h2')).find(h => h.textContent?.includes('Detailed Breakdown'));
+          if (detailedH2) {
+            detailedH2.insertAdjacentElement('afterend', matrixContainer);
+          } else {
+            contentRoot.appendChild(matrixContainer);
+          }
+        }
+      }
+    </script>
   </body>
 </html>
