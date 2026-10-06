@@ -1,0 +1,221 @@
+﻿---
+import { getCollection } from 'astro:content';
+
+const comparisons = await getCollection('comparisons');
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StackVersus — SaaS & AI Tool Benchmarks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg: #090d16;
+        --card-bg: rgba(18, 24, 38, 0.7);
+        --card-border: rgba(255, 255, 255, 0.08);
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+        --accent: #6366f1;
+        --accent-glow: rgba(99, 102, 241, 0.35);
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+        background-color: var(--bg);
+        color: var(--text-primary);
+        min-height: 100vh;
+        overflow-x: hidden;
+        position: relative;
+      }
+
+      /* Animated Generative Background Mesh */
+      .ambient-glow {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      .blob {
+        position: absolute;
+        width: 550px;
+        height: 550px;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0.45;
+        animation: float 14s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .blob-1 { top: -100px; left: -100px; background: radial-gradient(circle, #4f46e5, #06b6d4); }
+      .blob-2 { bottom: -120px; right: -80px; background: radial-gradient(circle, #ec4899, #8b5cf6); animation-duration: 18s; }
+      .blob-3 { top: 40%; left: 35%; background: radial-gradient(circle, #3b82f6, #10b981); opacity: 0.25; animation-duration: 22s; }
+
+      @keyframes float {
+        0% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(60px, 40px) scale(1.1); }
+        100% { transform: translate(-40px, 80px) scale(0.95); }
+      }
+
+      .container {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 60px 24px 100px;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 50px;
+      }
+
+      .tag {
+        display: inline-block;
+        padding: 6px 14px;
+        background: rgba(99, 102, 241, 0.15);
+        border: 1px solid rgba(99, 102, 241, 0.4);
+        color: #a5b4fc;
+        font-size: 0.82rem;
+        font-weight: 600;
+        border-radius: 20px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+      }
+
+      h1 {
+        font-size: clamp(2.2rem, 5vw, 3.2rem);
+        font-weight: 800;
+        margin: 0 0 16px;
+        line-height: 1.15;
+        background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      header p {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        max-width: 580px;
+        margin: 0 auto;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+        gap: 22px;
+      }
+
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 24px;
+        text-decoration: none;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 16px;
+        padding: 1px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent 70%);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+      }
+
+      .card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(99, 102, 241, 0.4);
+        box-shadow: 0 16px 32px -8px var(--accent-glow);
+      }
+
+      .card-category {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #38bdf8;
+        margin-bottom: 12px;
+      }
+
+      .card h2 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0 0 12px;
+        line-height: 1.35;
+      }
+
+      .card p {
+        color: var(--text-secondary);
+        font-size: 0.92rem;
+        line-height: 1.55;
+        margin: 0 0 20px;
+        flex-grow: 1;
+      }
+
+      .cta-link {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #818cf8;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: gap 0.2s ease;
+      }
+
+      .card:hover .cta-link {
+        gap: 10px;
+        color: #a5b4fc;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Generative Motion Background -->
+    <div class="ambient-glow">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+
+    <div class="container">
+      <header>
+        <span class="tag">⚡ Unbiased Automated Benchmarks</span>
+        <h1>Compare Top Tools.<br/>Decide with Precision.</h1>
+        <p>In-depth, data-driven software head-to-heads to upgrade your stack without the sales fluff.</p>
+      </header>
+
+      <div class="grid">
+        {comparisons.map(item => (
+          <a href={`/comparisons/${item.id.replace(/\.md$/, '')}`} class="card">
+            <div>
+              <div class="card-category">{item.data.category || 'Software Comparison'}</div>
+              <h2>{item.data.title}</h2>
+              <p>{item.data.description}</p>
+            </div>
+            <span class="cta-link">Read Breakdown <span>→</span></span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </body>
+</html>

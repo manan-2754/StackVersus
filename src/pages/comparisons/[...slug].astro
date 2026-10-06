@@ -1,0 +1,147 @@
+﻿---
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('comparisons');
+  return posts.map(entry => ({
+    params: { slug: entry.id.replace(/\.md$/, '') },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{entry.data.title}</title>
+    <meta name="description" content={entry.data.description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg: #090d16;
+        --card-bg: rgba(18, 24, 38, 0.7);
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+        --accent: #6366f1;
+      }
+      body {
+        margin: 0;
+        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text-primary);
+        line-height: 1.7;
+      }
+      .ambient-glow {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .blob {
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        border-radius: 50%;
+        filter: blur(130px);
+        opacity: 0.3;
+      }
+      .blob-1 { top: -80px; left: 10%; background: #4f46e5; }
+      .blob-2 { bottom: 10%; right: 5%; background: #06b6d4; }
+
+      .wrapper {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 50px 24px 100px;
+      }
+
+      .back-nav {
+        margin-bottom: 30px;
+      }
+      .back-nav a {
+        color: #818cf8;
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .back-nav a:hover { color: #a5b4fc; text-decoration: underline; }
+
+      article {
+        background: var(--card-bg);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 40px;
+        backdrop-filter: blur(16px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      h1 { font-size: 2.3rem; margin-top: 0; line-height: 1.25; }
+      h2 { font-size: 1.5rem; margin-top: 36px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; color: #e2e8f0; }
+      h3 { font-size: 1.2rem; color: #cbd5e1; }
+
+      blockquote {
+        background: rgba(99, 102, 241, 0.12);
+        border-left: 4px solid var(--accent);
+        border-radius: 8px;
+        margin: 24px 0;
+        padding: 16px 22px;
+        font-size: 1.05rem;
+        color: #e0e7ff;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 28px 0;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      th, td {
+        padding: 14px 18px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        text-align: left;
+      }
+      th {
+        background: rgba(255, 255, 255, 0.04);
+        color: #93c5fd;
+        font-size: 0.95rem;
+      }
+      td { background: rgba(0, 0, 0, 0.2); }
+
+      a {
+        color: #38bdf8;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      a:hover { text-decoration: underline; }
+
+      ul { padding-left: 20px; }
+      li { margin-bottom: 8px; }
+      hr { border: none; border-top: 1px solid rgba(255, 255, 255, 0.08); margin: 36px 0; }
+    </style>
+  </head>
+  <body>
+    <div class="ambient-glow">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+
+    <div class="wrapper">
+      <div class="back-nav">
+        <a href="/">← Back to All Comparisons</a>
+      </div>
+      <article>
+        <Content />
+      </article>
+    </div>
+  </body>
+</html>
