@@ -59,3 +59,55 @@ Mixpanel,PostHog,Product Analytics,Product teams evaluating event-based funnel t
 Amplitude,Mixpanel,User Behavior Analytics,Growth teams comparing advanced enterprise cohorts with flexible self-serve analytics
 Algolia,Meilisearch,Search Engine APIs,Developers deciding between hosted instant search APIs and open-source typo-tolerant engines
 Typesense,Algolia,Search as a Service,Engineers seeking affordable open-source search alternatives to expensive commercial tiers
+
+tool_a,tool_b,category,intent
+Clerk,Auth0,Developer Auth,High
+WorkOS,Kinde,Developer Auth,High
+Supabase Auth,Firebase Auth,Developer Auth,High
+Lucia,NextAuth,Developer Auth,Medium
+Stytch,Clerk,Developer Auth,High
+Pinecone,Qdrant,Vector Databases,High
+Weaviate,Milvus,Vector Databases,High
+Chroma,pgvector,Vector Databases,High
+Qdrant,pgvector,Vector Databases,High
+Turbopuff,Pinecone,Vector Databases,High
+Drizzle ORM,Prisma,Data & ORM,High
+Kysely,Drizzle ORM,Data & ORM,Medium
+TypeORM,Prisma,Data & ORM,Medium
+SQLAlchemy,Prisma,Data & ORM,Medium
+Axiom,Datadog,Observability,High
+Better Stack,PagerDuty,Observability,High
+Highlight.io,Sentry,Observability,High
+SigNoz,Datadog,Observability,High
+Logtail,Papertrail,Observability,Medium
+Turso,Neon,Cloud Databases,High
+Upstash,Redis Cloud,Caching & Storage,High
+TiDB,CockroachDB,Distributed SQL,High
+Convex,Supabase,Backend Platforms,High
+Appwrite,Supabase,Backend Platforms,High
+LangChain,LlamaIndex,AI Frameworks,High
+Langfuse,Arize Phoenix,AI Observability,High
+Vellum,Humanloop,AI Prompt Ops,High
+Ollama,vLLM,AI Inference,High
+Unsloth,Axolotl,AI Fine-Tuning,Medium
+Bun,Node.js,Runtimes & Engines,High
+Deno,Bun,Runtimes & Engines,High
+Trigger.dev,Inngest,Background Jobs,High
+Temporal,Inngest,Orchestration,High
+BullMQ,Inngest,Background Jobs,Medium
+Railway,Render,Cloud Hosting,High
+Fly.io,Railway,Cloud Hosting,High
+Coolify,Portainer,Self-Hosted Infra,High
+Kamal,Dokku,Deployment Tools,High
+Tailscale,Cloudflare Zero Trust,Networking & Sec,High
+Infisical,Doppler,Secrets Management,High
+Vault,Doppler,Secrets Management,High
+PostHog,Mixpanel,Product Analytics,High
+June.so,PostHog,Product Analytics,Medium
+Dub.co,Bitly,Link Infrastructure,High
+Resend,SendGrid,Transactional Email,High
+Plunk,Resend,Transactional Email,Medium
+Loops.so,Customer.io,Email Automation,High
+Linear,Jira,Developer Workflows,High
+Raycast,Alfred,Developer Productivity,Medium
+Warp,iTerm2,Terminal Infrastructure,Medium
