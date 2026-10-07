@@ -1,4 +1,5 @@
 ---
+---
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -12,8 +13,11 @@
       :root {
         --z-black: #060707;
         --z-card: rgba(14, 16, 15, 0.72);
+        --z-card-hover: rgba(22, 26, 24, 0.85);
         --z-border: rgba(255, 255, 255, 0.08);
         --z-lime: #22E576;
+        --z-lime-glow: rgba(34, 229, 118, 0.35);
+        --z-coral: #FF385C;
         --z-text: #F2F2F2;
         --z-muted: #8E928E;
       }
@@ -35,16 +39,31 @@
         gap: 8px;
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.8rem;
-        color: var(--z-lime);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #ffffff;
         text-decoration: none;
+        padding: 8px 20px;
+        border-radius: 999px;
+        background: rgba(14, 18, 16, 0.8);
+        border: 1px solid var(--z-border);
+        transition: all 0.25s ease;
         margin-bottom: 32px;
+      }
+      .back-btn:hover {
+        background: var(--z-lime);
+        color: #000000;
+        box-shadow: 0 0 18px var(--z-lime-glow);
+        transform: translateX(-4px);
       }
       h1 {
         font-family: 'Syne', sans-serif;
         font-size: clamp(2.2rem, 4vw, 3.5rem);
         font-weight: 800;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
         text-transform: uppercase;
+        color: #ffffff;
       }
       .glass-panel {
         background: var(--z-card);
@@ -52,16 +71,36 @@
         border-radius: 16px;
         padding: clamp(24px, 4vw, 40px);
         line-height: 1.7;
+        backdrop-filter: blur(20px);
       }
       h2 {
         font-family: 'Syne', sans-serif;
         font-size: 1.4rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: -0.02em;
         color: var(--z-lime);
-        margin: 28px 0 12px;
+        margin: 32px 0 14px;
       }
-      p { margin-bottom: 16px; color: #dcdcdc; }
-      ul { padding-left: 20px; margin-bottom: 16px; }
+      p { margin-bottom: 16px; color: #dcdcdc; font-size: 1rem; }
+      ul { padding-left: 20px; margin-bottom: 18px; color: #dcdcdc; }
       li { margin-bottom: 8px; }
+      
+      /* Distinct Callout Box for Affiliate Disclosure */
+      .disclosure-box {
+        margin: 36px 0 20px;
+        padding: 24px 28px;
+        background: rgba(10, 14, 12, 0.85);
+        border: 1px solid rgba(34, 229, 118, 0.2);
+        border-left: 4px solid var(--z-lime);
+        border-radius: 12px;
+        scroll-margin-top: 40px;
+      }
+      .disclosure-box h2 {
+        margin-top: 0;
+        color: #ffffff;
+        font-size: 1.25rem;
+      }
     </style>
   </head>
   <body>
@@ -70,23 +109,40 @@
       <h1>About StackVersus</h1>
       <div class="glass-panel">
         <p>
-          StackVersus is a programmatic benchmarking intelligence hub engineered to help developers, engineering managers, and technical founders evaluate production tooling without vendor marketing bias.
+          StackVersus is an independent developer intelligence platform engineered to eliminate analysis paralysis when evaluating cloud tools, modern databases, and production software infrastructure.
         </p>
 
         <h2>Our Mission</h2>
         <p>
-          Choosing between developer stacks, cloud infrastructure providers, and modern SaaS tools usually requires wading through marketing hype and vague pricing tiers. StackVersus audits and standardizes direct head-to-head comparisons focusing on architectural fit, developer experience, and cost at scale.
+          Choosing between developer stacks, cloud infrastructure providers, and modern SaaS tools usually requires wading through marketing hype and vague pricing tiers. StackVersus audits and standardizes direct head-to-head comparisons focusing strictly on architectural fit, developer experience, and cost curves at scale.
         </p>
 
-        <h2>Data-Driven Telemetry</h2>
+        <h2>Benchmarking Methodology</h2>
         <p>
-          Every comparison in our matrix is cross-evaluated across primary vectors:
+          Every comparison in our matrix is cross-evaluated across four core pillars:
         </p>
         <ul>
-          <li><strong>Architecture & DX:</strong> Real-world trade-offs, SDK ecosystem health, and migration complexity.</li>
-          <li><strong>Transparent Pricing:</strong> Tier breakdowns, free tier quotas, seat costs, and compute thresholds.</li>
-          <li><strong>Multi-Agent Synthesis:</strong> Technical accuracy verified across Google Gemini and Meta LLaMA 3.3 models.</li>
+          <li><strong>Architecture & Runtime:</strong> Evaluated on compute footprint, cold start latencies, memory utilization, connection pooling limits, and self-hosting escape hatches.</li>
+          <li><strong>Developer Experience (DX):</strong> Setup friction, CLI ergonomics, SDK ergonomics across TypeScript/Go/Python, and migration complexity.</li>
+          <li><strong>Transparent Cost Audits:</strong> Real-world monthly estimates accounting for hidden egress bandwidth fees, seat minimums, and compute overages.</li>
+          <li><strong>Multi-Agent Verification:</strong> Technical consistency scored across Google Gemini, Meta LLaMA 3.3, and verified open-source documentation.</li>
         </ul>
+
+        <!-- Targeted Anchor for Footer Link -->
+        <div class="disclosure-box" id="disclosure">
+          <h2>Affiliate Disclosure & Editorial Independence</h2>
+          <p>
+            StackVersus is reader-supported. Some links on our comparison tables and action buttons are affiliate tracking links, meaning we may earn a referral commission if you subscribe to a paid plan at no additional cost to you.
+          </p>
+          <p style="margin-bottom: 0;">
+            However, our rankings, pros/cons, and technical assessments are generated using objective criteria and verified architectural specs. They are never influenced, altered, or dictated by commercial affiliate partnerships.
+          </p>
+        </div>
+
+        <h2>Contact & Editorial Corrections</h2>
+        <p>
+          Notice an outdated pricing tier, changed rate limit, or new SDK release? Send correction details directly to our research pipeline at <strong style="color: var(--z-lime); font-family: 'JetBrains Mono', monospace;">team@stackversus.pages.dev</strong>.
+        </p>
       </div>
     </div>
   </body>
