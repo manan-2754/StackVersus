@@ -26,7 +26,8 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
     <meta charset="utf-8" />
     <meta name="google-site-verification" content="rtsDytRNMUXcqZtXlPZqarvwSa3aukoYtoX-if1ThTc" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>StackVersus — Kinetic Benchmark Engine </title>
+    <title>StackVersus — Kinetic Benchmark Engine</title>
+    <meta name="description" content="Real-time architectural benchmarks, deep telemetry specs, and pricing audits to scale modern engineering stacks." />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
@@ -56,7 +57,6 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         overflow-x: hidden;
       }
 
-      /* Fullscreen Interactive WebGL/Canvas Wave Ribbon */
       #zajno-motion-canvas {
         position: fixed;
         inset: 0;
@@ -66,22 +66,21 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         pointer-events: none;
       }
 
-      /* Screen Space Widescreen Layout */
       .viewport-wrapper {
         position: relative;
         z-index: 1;
         width: 95%;
         max-width: 1720px;
         margin: 0 auto;
-        padding: 28px 0 100px;
+        padding: clamp(16px, 3vw, 28px) 0 100px;
       }
 
-      /* Top HUD Bar */
+      /* Top HUD Bar with Clean Mobile Collapsing */
       .hud-topbar {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding-bottom: 24px;
+        padding-bottom: clamp(14px, 2vw, 24px);
         border-bottom: 1px solid var(--z-border);
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.76rem;
@@ -95,7 +94,9 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         align-items: center;
         gap: 8px;
         color: var(--z-lime);
+        white-space: nowrap;
       }
+
       .hud-dot {
         width: 7px;
         height: 7px;
@@ -110,14 +111,14 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         50% { opacity: 0.4; transform: scale(0.8); }
       }
 
-      /* Zajno Kinetic Hero Header */
+      /* Header & Dynamic Hero Typography */
       header {
-        margin: 40px 0 36px;
+        margin: clamp(24px, 4vw, 44px) 0 clamp(20px, 3vw, 36px);
       }
 
       .hero-tag {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 0.8rem;
+        font-size: clamp(0.72rem, 1.2vw, 0.8rem);
         color: var(--z-lime);
         text-transform: uppercase;
         letter-spacing: 0.12em;
@@ -127,12 +128,13 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
 
       h1 {
         font-family: 'Syne', sans-serif;
-        font-size: clamp(2.4rem, 5.2vw, 4.8rem);
+        font-size: clamp(2rem, 5vw, 4.4rem);
         font-weight: 800;
-        line-height: 1.05;
+        line-height: 1.06;
         letter-spacing: -0.04em;
         text-transform: uppercase;
         color: #ffffff;
+        word-break: break-word;
       }
 
       h1 span.kinetic-gradient {
@@ -142,49 +144,106 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
       }
 
       header p {
-        font-size: 1.05rem;
+        font-size: clamp(0.92rem, 1.6vw, 1.05rem);
         color: var(--z-muted);
         max-width: 620px;
         margin-top: 14px;
         line-height: 1.6;
       }
 
-      /* Single-Line Kinetic Pill Nav Bar */
+      /* --- Unified Side-by-Side Toolbar --- */
+      .toolbar-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 34px;
+        width: 100%;
+      }
+
+      /* Integrated Search Input */
+      .search-box {
+        position: relative;
+        flex: 0 0 clamp(260px, 28vw, 380px);
+        min-width: 240px;
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--z-muted);
+        pointer-events: none;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.95rem;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 11px 16px 11px 42px;
+        font-size: 0.88rem;
+        font-family: 'Inter', sans-serif;
+        color: #ffffff;
+        background: rgba(14, 18, 16, 0.7);
+        border: 1px solid var(--z-border);
+        border-radius: 999px;
+        backdrop-filter: blur(20px);
+        outline: none;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .search-input::placeholder {
+        color: var(--z-muted);
+        font-size: 0.84rem;
+      }
+
+      .search-input:focus {
+        border-color: var(--z-lime);
+        box-shadow: 0 0 16px var(--z-lime-glow);
+        background: rgba(18, 24, 21, 0.9);
+      }
+
+      /* Smooth Scrollable Nav Container */
       .nav-container {
         display: flex;
         align-items: center;
-        margin-bottom: 34px;
-        width: 100%;
+        flex: 1;
+        min-width: 0;
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
+        mask-image: linear-gradient(to right, black 85%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
       }
       .nav-container::-webkit-scrollbar { display: none; }
 
       .filter-bar {
         display: inline-flex;
         flex-wrap: nowrap;
-        gap: 8px;
-        padding: 6px;
+        gap: 6px;
+        padding: 5px;
         background: rgba(14, 18, 16, 0.7);
         border: 1px solid var(--z-border);
         border-radius: 999px;
         backdrop-filter: blur(20px);
+        white-space: nowrap;
       }
 
       .filter-pill {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 0.78rem;
+        font-size: 0.75rem;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.04em;
-        padding: 7px 18px;
+        padding: 6px 16px;
         border-radius: 999px;
         border: 1px solid transparent;
         background: transparent;
         color: var(--z-muted);
         cursor: pointer;
-        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         white-space: nowrap;
+        flex-shrink: 0;
       }
 
       .filter-pill:hover {
@@ -197,23 +256,22 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         color: #000000;
         font-weight: 700;
         border-color: var(--z-lime);
-        box-shadow: 0 0 16px var(--z-lime-glow);
+        box-shadow: 0 0 14px var(--z-lime-glow);
       }
 
-      /* Expansive Card Grid */
+      /* Grid of Cards */
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-        gap: 24px;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 22px;
       }
 
-      /* Zajno Style Kinetic Glass Card */
       .card {
         position: relative;
         background: var(--z-card);
         border: 1px solid var(--z-border);
         border-radius: 18px;
-        padding: 28px;
+        padding: 26px;
         text-decoration: none;
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
@@ -221,12 +279,11 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         flex-direction: column;
         justify-content: space-between;
         overflow: hidden;
-        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
-                    border-color 0.35s ease, 
-                    box-shadow 0.35s ease;
+        transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), 
+                    border-color 0.32s ease, 
+                    box-shadow 0.32s ease;
       }
 
-      /* Hover Glowing Accent Strip */
       .card::before {
         content: '';
         position: absolute;
@@ -241,9 +298,9 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
 
       .card:hover {
         background: var(--z-card-hover);
-        transform: translateY(-6px);
+        transform: translateY(-5px);
         border-color: var(--z-border-glow);
-        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 25px rgba(34, 229, 118, 0.15);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(34, 229, 118, 0.12);
       }
 
       .card:hover::before { opacity: 1; }
@@ -252,7 +309,7 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
       }
 
       .card-category {
@@ -270,25 +327,25 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
 
       .card-idx {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 0.75rem;
+        font-size: 0.74rem;
         color: var(--z-muted);
       }
 
       .card h2 {
         font-family: 'Syne', sans-serif;
-        font-size: 1.35rem;
+        font-size: 1.3rem;
         font-weight: 700;
         line-height: 1.25;
         letter-spacing: -0.02em;
         color: #ffffff;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
       }
 
       .card p {
-        font-size: 0.92rem;
+        font-size: 0.9rem;
         color: var(--z-muted);
         line-height: 1.6;
-        margin-bottom: 24px;
+        margin-bottom: 22px;
         flex-grow: 1;
       }
 
@@ -296,13 +353,13 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding-top: 18px;
+        padding-top: 16px;
         border-top: 1px solid rgba(255, 255, 255, 0.05);
       }
 
       .action-pill {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         font-weight: 700;
         color: var(--z-coral);
         display: inline-flex;
@@ -317,14 +374,50 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         color: #ff5e7e;
       }
 
-      @media (max-width: 768px) {
-        .viewport-wrapper { width: 92%; }
-        .grid { grid-template-columns: 1fr; }
+      .no-results-msg {
+        display: none;
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 60px 20px;
+        font-family: 'JetBrains Mono', monospace;
+        color: var(--z-muted);
+        font-size: 0.9rem;
+        border: 1px dashed var(--z-border);
+        border-radius: 16px;
+        background: rgba(14, 18, 16, 0.4);
+      }
+
+      /* Mobile and Small Screen Responsiveness */
+      @media (max-width: 900px) {
+        .toolbar-wrapper {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 14px;
+        }
+        .search-box {
+          flex: 1 1 100%;
+          min-width: 100%;
+        }
+        .nav-container {
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .hud-telemetry {
+          display: none; /* Hide extraneous telemetry items on phones to prevent crowding */
+        }
+        .viewport-wrapper {
+          width: 92%;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
-    <!-- Motion Zajno Interactive Kinetic Vector Ribbon Canvas -->
+    <!-- Motion Vector Canvas -->
     <canvas id="zajno-motion-canvas"></canvas>
 
     <div class="viewport-wrapper">
@@ -333,8 +426,8 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
           <span class="hud-dot"></span>
           StackVersus // Kinetic System 2.0
         </div>
-        <div>Engine: StackVersus </div>
-        <div>State: 60 FPS Accelerated</div>
+        <div class="hud-telemetry">Engine: StackVersus</div>
+        <div class="hud-telemetry">State: 60 FPS Accelerated</div>
       </div>
 
       <header>
@@ -346,24 +439,45 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         <p>Real-time architectural benchmarks, deep telemetry specs, and pricing audits to scale modern engineering stacks.</p>
       </header>
 
-      <!-- Single-Line Filter Nav -->
-      <div class="nav-container">
-        <nav class="filter-bar" aria-label="Category Navigation">
-          {clusters.map((cluster, i) => (
-            <button class={`filter-pill ${i === 0 ? 'active' : ''}`} data-cluster={cluster}>
-              {cluster}
-            </button>
-          ))}
-        </nav>
+      <!-- Horizontal Unified Toolbar: Search + Horizontal Scroll Navigation -->
+      <div class="toolbar-wrapper">
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+          <input 
+            type="text" 
+            id="catalogSearch" 
+            class="search-input" 
+            placeholder="Search tools (e.g. Postgres, Docker)..." 
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+
+        <div class="nav-container">
+          <nav class="filter-bar" aria-label="Category Navigation">
+            {clusters.map((cluster, i) => (
+              <button class={`filter-pill ${i === 0 ? 'active' : ''}`} data-cluster={cluster}>
+                {cluster}
+              </button>
+            ))}
+          </nav>
+        </div>
       </div>
 
-      <!-- Expansive Comparison Matrix Grid -->
+      <!-- Comparison Matrix Grid -->
       <main class="grid" id="comparisons-grid">
+        <div id="no-results" class="no-results-msg">
+          // No matching architecture comparisons found for your search query.
+        </div>
+
         {comparisons.map((item, index) => (
           <a 
             href={`/comparisons/${item.id.replace(/\.md$/, '')}`} 
             class="card"
             data-cluster={item.cluster}
+            data-title={item.data.title}
+            data-category={item.data.category || ''}
+            data-desc={item.data.description}
           >
             <div>
               <div class="card-meta">
@@ -381,7 +495,7 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
       </main>
     </div>
 
-    <!-- Client-Side Kinetic Canvas Ribbon (Zajno Mathematical Simulation) -->
+    <!-- Client-Side Background Ribbon Canvas -->
     <script>
       const canvas = document.getElementById('zajno-motion-canvas') as HTMLCanvasElement;
       const ctx = canvas.getContext('2d')!;
@@ -401,17 +515,13 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
       });
 
       let time = 0;
-
-      function renderZajnoRibbon() {
+      function renderRibbon() {
         ctx.fillStyle = '#060707';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
         time += 0.016;
 
-        const normX = mouseX / canvas.width;
-        const normY = mouseY / canvas.height;
+        const normY = mouseY / Math.max(canvas.height, 1);
 
-        // Draw Ambient Displacement Mesh (Subtle Grid)
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
         ctx.lineWidth = 1;
         const step = 60;
@@ -422,7 +532,6 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
           ctx.stroke();
         }
 
-        // Draw Multi-Layered Kinetic Bézier Wave Ribbons
         const ribbons = [
           { color: '#22E576', alpha: 0.35, width: 2.5, speed: 1.0, freq: 0.002, amp: 90 },
           { color: '#FF385C', alpha: 0.28, width: 2.0, speed: 1.3, freq: 0.0025, amp: 120 },
@@ -446,7 +555,6 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
           ctx.stroke();
         });
 
-        // Interactive Cursor Radial Flare
         const flare = ctx.createRadialGradient(mouseX, mouseY, 10, mouseX, mouseY, 350);
         flare.addColorStop(0, 'rgba(34, 229, 118, 0.08)');
         flare.addColorStop(1, 'transparent');
@@ -454,28 +562,81 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.globalAlpha = 1.0;
-        requestAnimationFrame(renderZajnoRibbon);
+        requestAnimationFrame(renderRibbon);
       }
-      renderZajnoRibbon();
+      renderRibbon();
+    </script>
 
-      // Navigation filter
-      const buttons = document.querySelectorAll('.filter-pill');
-      const cards = document.querySelectorAll<HTMLElement>('.card');
+    <!-- Client-Side Search (Fuse.js) + Cluster Filter Controller -->
+    <script>
+      import Fuse from 'fuse.js';
+
+      const searchInput = document.getElementById('catalogSearch') as HTMLInputElement | null;
+      const noResults = document.getElementById('no-results');
+      const cards = Array.from(document.querySelectorAll<HTMLElement>('.card'));
+      const buttons = document.querySelectorAll<HTMLButtonElement>('.filter-pill');
+
+      let currentCluster = 'All';
+      let currentQuery = '';
+
+      const searchData = cards.map((card, index) => ({
+        index,
+        title: card.getAttribute('data-title') || '',
+        category: card.getAttribute('data-category') || '',
+        desc: card.getAttribute('data-desc') || '',
+      }));
+
+      const fuse = new Fuse(searchData, {
+        keys: [
+          { name: 'title', weight: 0.6 },
+          { name: 'category', weight: 0.25 },
+          { name: 'desc', weight: 0.15 }
+        ],
+        threshold: 0.35,
+        ignoreLocation: true
+      });
+
+      function applyFilters() {
+        let matchingIndices: Set<number> | null = null;
+
+        if (currentQuery) {
+          const results = fuse.search(currentQuery);
+          matchingIndices = new Set(results.map(r => r.item.index));
+        }
+
+        let visibleCount = 0;
+
+        cards.forEach((card, idx) => {
+          const cardCluster = card.getAttribute('data-cluster');
+          const matchesCluster = (currentCluster === 'All' || cardCluster === currentCluster);
+          const matchesSearch = matchingIndices === null || matchingIndices.has(idx);
+
+          if (matchesCluster && matchesSearch) {
+            card.style.display = 'flex';
+            visibleCount++;
+          } else {
+            card.style.display = 'none';
+          }
+        });
+
+        if (noResults) {
+          noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+      }
+
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          currentQuery = (e.target as HTMLInputElement).value.trim();
+          applyFilters();
+        });
+      }
 
       buttons.forEach(btn => {
         btn.addEventListener('click', () => {
           buttons.forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
-
-          const cluster = btn.getAttribute('data-cluster');
-          cards.forEach(card => {
-            const cardCluster = card.getAttribute('data-cluster');
-            if (cluster === 'All' || cardCluster === cluster) {
-              card.style.display = 'flex';
-            } else {
-              card.style.display = 'none';
-            }
-          });
+          currentCluster = btn.getAttribute('data-cluster') || 'All';
+          applyFilters();
         });
       });
     </script>
