@@ -72,10 +72,10 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         width: 95%;
         max-width: 1720px;
         margin: 0 auto;
-        padding: clamp(16px, 3vw, 28px) 0 100px;
+        padding: clamp(16px, 3vw, 28px) 0 60px;
       }
 
-      /* Top HUD Bar with Clean Mobile Collapsing */
+      /* Top HUD Bar */
       .hud-topbar {
         display: flex;
         justify-content: space-between;
@@ -160,7 +160,6 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         width: 100%;
       }
 
-      /* Integrated Search Input */
       .search-box {
         position: relative;
         flex: 0 0 clamp(260px, 28vw, 380px);
@@ -203,7 +202,6 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         background: rgba(18, 24, 21, 0.9);
       }
 
-      /* Smooth Scrollable Nav Container */
       .nav-container {
         display: flex;
         align-items: center;
@@ -313,6 +311,8 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
       }
 
       .card-category {
+        position: relative;
+        z-index: 2;
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.72rem;
         font-weight: 700;
@@ -323,6 +323,14 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         padding: 4px 10px;
         border-radius: 6px;
         border: 1px solid rgba(34, 229, 118, 0.25);
+        text-decoration: none;
+        transition: all 0.2s ease;
+      }
+
+      .card-category:hover {
+        background: var(--z-lime);
+        color: #000000;
+        box-shadow: 0 0 10px var(--z-lime-glow);
       }
 
       .card-idx {
@@ -387,7 +395,32 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         background: rgba(14, 18, 16, 0.4);
       }
 
-      /* Mobile and Small Screen Responsiveness */
+      /* Site Footer */
+      .site-footer {
+        margin-top: 80px;
+        padding-top: 32px;
+        border-top: 1px solid var(--z-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.78rem;
+        color: var(--z-muted);
+      }
+
+      .site-footer a {
+        color: var(--z-muted);
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+
+      .site-footer a:hover {
+        color: var(--z-lime);
+      }
+
+      /* Responsiveness */
       @media (max-width: 900px) {
         .toolbar-wrapper {
           flex-direction: column;
@@ -405,13 +438,18 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
 
       @media (max-width: 640px) {
         .hud-telemetry {
-          display: none; /* Hide extraneous telemetry items on phones to prevent crowding */
+          display: none;
         }
         .viewport-wrapper {
           width: 92%;
         }
         .grid {
           grid-template-columns: 1fr;
+        }
+        .site-footer {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
         }
       }
     </style>
@@ -439,7 +477,7 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
         <p>Real-time architectural benchmarks, deep telemetry specs, and pricing audits to scale modern engineering stacks.</p>
       </header>
 
-      <!-- Horizontal Unified Toolbar: Search + Horizontal Scroll Navigation -->
+      <!-- Horizontal Unified Toolbar -->
       <div class="toolbar-wrapper">
         <div class="search-box">
           <span class="search-icon">⌕</span>
@@ -470,29 +508,52 @@ const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & 
           // No matching architecture comparisons found for your search query.
         </div>
 
-        {comparisons.map((item, index) => (
-          <a 
-            href={`/comparisons/${item.id.replace(/\.md$/, '')}`} 
-            class="card"
-            data-cluster={item.cluster}
-            data-title={item.data.title}
-            data-category={item.data.category || ''}
-            data-desc={item.data.description}
-          >
-            <div>
-              <div class="card-meta">
-                <span class="card-category">{item.data.category || 'Benchmark'}</span>
-                <span class="card-idx">[0{index + 1}]</span>
+        {comparisons.map((item, index) => {
+          const categorySlug = (item.data.category || 'Developer Tools')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '');
+
+          return (
+            <a 
+              href={`/comparisons/${item.id.replace(/\.md$/, '')}`} 
+              class="card"
+              data-cluster={item.cluster}
+              data-title={item.data.title}
+              data-category={item.data.category || ''}
+              data-desc={item.data.description}
+            >
+              <div>
+                <div class="card-meta">
+                  <span 
+                    class="card-category"
+                    onclick={`event.stopPropagation(); window.location.href='/categories/${categorySlug}';`}
+                  >
+                    {item.data.category || 'Benchmark'}
+                  </span>
+                  <span class="card-idx">[0{index + 1}]</span>
+                </div>
+                <h2>{item.data.title}</h2>
+                <p>{item.data.description}</p>
               </div>
-              <h2>{item.data.title}</h2>
-              <p>{item.data.description}</p>
-            </div>
-            <div class="card-footer">
-              <span class="action-pill">Launch Specs <span>→</span></span>
-            </div>
-          </a>
-        ))}
+              <div class="card-footer">
+                <span class="action-pill">Launch Specs <span>→</span></span>
+              </div>
+            </a>
+          );
+        })}
       </main>
+
+      <!-- E-E-A-T Footer -->
+      <footer class="site-footer">
+        <div>
+          © {new Date().getFullYear()} StackVersus. Independent developer tooling benchmarks.
+        </div>
+        <div style="display: flex; gap: 20px;">
+          <a href="/about">Methodology & About</a>
+          <a href="/about">Affiliate Disclosure</a>
+        </div>
+      </footer>
     </div>
 
     <!-- Client-Side Background Ribbon Canvas -->

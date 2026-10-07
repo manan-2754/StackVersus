@@ -1,0 +1,93 @@
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About StackVersus — Kinetic Benchmark Engine</title>
+    <meta name="description" content="Learn how StackVersus delivers unbiased, data-driven software comparisons and developer architecture benchmarks." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --z-black: #060707;
+        --z-card: rgba(14, 16, 15, 0.72);
+        --z-border: rgba(255, 255, 255, 0.08);
+        --z-lime: #22E576;
+        --z-text: #F2F2F2;
+        --z-muted: #8E928E;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--z-black);
+        color: var(--z-text);
+        min-height: 100vh;
+        padding: clamp(20px, 4vw, 40px) 20px 80px;
+      }
+      .container {
+        max-width: 840px;
+        margin: 0 auto;
+      }
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.8rem;
+        color: var(--z-lime);
+        text-decoration: none;
+        margin-bottom: 32px;
+      }
+      h1 {
+        font-family: 'Syne', sans-serif;
+        font-size: clamp(2.2rem, 4vw, 3.5rem);
+        font-weight: 800;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+      }
+      .glass-panel {
+        background: var(--z-card);
+        border: 1px solid var(--z-border);
+        border-radius: 16px;
+        padding: clamp(24px, 4vw, 40px);
+        line-height: 1.7;
+      }
+      h2 {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.4rem;
+        color: var(--z-lime);
+        margin: 28px 0 12px;
+      }
+      p { margin-bottom: 16px; color: #dcdcdc; }
+      ul { padding-left: 20px; margin-bottom: 16px; }
+      li { margin-bottom: 8px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="/" class="back-btn">← Back to Main Arena</a>
+      <h1>About StackVersus</h1>
+      <div class="glass-panel">
+        <p>
+          StackVersus is a programmatic benchmarking intelligence hub engineered to help developers, engineering managers, and technical founders evaluate production tooling without vendor marketing bias.
+        </p>
+
+        <h2>Our Mission</h2>
+        <p>
+          Choosing between developer stacks, cloud infrastructure providers, and modern SaaS tools usually requires wading through marketing hype and vague pricing tiers. StackVersus audits and standardizes direct head-to-head comparisons focusing on architectural fit, developer experience, and cost at scale.
+        </p>
+
+        <h2>Data-Driven Telemetry</h2>
+        <p>
+          Every comparison in our matrix is cross-evaluated across primary vectors:
+        </p>
+        <ul>
+          <li><strong>Architecture & DX:</strong> Real-world trade-offs, SDK ecosystem health, and migration complexity.</li>
+          <li><strong>Transparent Pricing:</strong> Tier breakdowns, free tier quotas, seat costs, and compute thresholds.</li>
+          <li><strong>Multi-Agent Synthesis:</strong> Technical accuracy verified across Google Gemini and Meta LLaMA 3.3 models.</li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>

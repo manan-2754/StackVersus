@@ -1,0 +1,96 @@
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Editorial Policy & Methodology — StackVersus</title>
+    <meta name="description" content="Read StackVersus's editorial integrity guidelines, evaluation methodology, and affiliate disclosure." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --z-black: #060707;
+        --z-card: rgba(14, 16, 15, 0.72);
+        --z-border: rgba(255, 255, 255, 0.08);
+        --z-lime: #22E576;
+        --z-coral: #FF385C;
+        --z-text: #F2F2F2;
+        --z-muted: #8E928E;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--z-black);
+        color: var(--z-text);
+        min-height: 100vh;
+        padding: clamp(20px, 4vw, 40px) 20px 80px;
+      }
+      .container {
+        max-width: 840px;
+        margin: 0 auto;
+      }
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.8rem;
+        color: var(--z-lime);
+        text-decoration: none;
+        margin-bottom: 32px;
+      }
+      h1 {
+        font-family: 'Syne', sans-serif;
+        font-size: clamp(2.2rem, 4vw, 3.5rem);
+        font-weight: 800;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+      }
+      .glass-panel {
+        background: var(--z-card);
+        border: 1px solid var(--z-border);
+        border-radius: 16px;
+        padding: clamp(24px, 4vw, 40px);
+        line-height: 1.7;
+      }
+      h2 {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.4rem;
+        color: var(--z-lime);
+        margin: 28px 0 12px;
+      }
+      p { margin-bottom: 16px; color: #dcdcdc; }
+      .disclosure-box {
+        background: rgba(255, 56, 92, 0.08);
+        border: 1px solid rgba(255, 56, 92, 0.3);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-top: 24px;
+        font-size: 0.92rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="/" class="back-btn">← Back to Main Arena</a>
+      <h1>Editorial Policy & Methodology</h1>
+      <div class="glass-panel">
+        <h2>Objective Benchmarking Standards</h2>
+        <p>
+          StackVersus maintains strict editorial independence. Our evaluations prioritize open-source availability, verifiable latency, community adoption, and predictable billing curves over proprietary claims.
+        </p>
+
+        <h2>Continuous Data Verification</h2>
+        <p>
+          Developer tooling changes rapidly. We continuously audit software documentation, changelogs, and pricing structures through automated validation pipelines to keep comparison specs accurate.
+        </p>
+
+        <div class="disclosure-box">
+          <strong style="color: var(--z-coral); display: block; margin-bottom: 6px;">Affiliate Disclosure</strong>
+          StackVersus participates in select partner referral programs. When you click outbound referral links to try tools, we may earn a modest commission at no additional cost to you. This does not influence our architectural scoring or feature comparisons.
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
