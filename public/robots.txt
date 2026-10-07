@@ -2,3 +2,4 @@
 Allow: /
 
 Sitemap: https://stackversus.pages.dev/sitemap-index.xml
+Sitemap: https://stackversus.pages.dev/sitemap-0.xml
