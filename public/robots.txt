@@ -1,0 +1,4 @@
+﻿User-agent: *
+Allow: /
+
+Sitemap: https://stackversus.pages.dev/sitemap-index.xml

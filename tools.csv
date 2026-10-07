@@ -23,3 +23,39 @@ Loom,https://affiliate.example.com/loom,Vidyard,https://affiliate.example.com/vi
 Notion,https://affiliate.example.com/notion,Coda,https://affiliate.example.com/coda,Collaborative Docs & Workspaces
 Zapier,https://affiliate.example.com/zapier,Make,https://affiliate.example.com/make,Workflow Automation
 Snyk,https://affiliate.example.com/snyk,SonarQube,https://affiliate.example.com/sonarqube,Code Security & Vulnerability
+tool_a,tool_b,category,intent
+Neon,PlanetScale,Serverless Databases,Developers choosing between serverless Postgres branching and scalable MySQL
+AWS Lambda,Cloudflare Workers,Serverless Compute,Engineers comparing cold-start latency pricing and edge execution models
+LangChain,LlamaIndex,AI Frameworks,Engineers choosing between agent orchestration and document indexing RAG pipelines
+vLLM,Ollama,Local AI Inference,Teams evaluating high-throughput production GPU serving vs local developer model runners
+Hugging Face,Replicate,AI Cloud Infrastructure,Developers deploying open-source models with dedicated endpoints vs serverless APIs
+Playwright,Cypress,End-to-End Testing,QA and frontend engineers comparing modern browser automation frameworks
+Vitest,Jest,JavaScript Testing,Developers benchmarking modern Vite-native unit testing vs legacy Jest
+Strapi,Sanity,Headless CMS,Content engineering teams choosing between open-source self-hosted and cloud API CMS
+Payload CMS,Directus,Backend & Headless CMS,Developers deciding on TypeScript-native backend frameworks vs database-driven CMS
+Astro,Next.js,Modern Web Frameworks,Developers comparing content-driven static islands architecture against full-stack SSR
+Remix,Next.js,Full-Stack React Frameworks,Engineers evaluating web standards and nested routing vs App Router
+Bun,Node.js,JavaScript Runtimes,Full-stack developers evaluating speed package management and runtime compatibility
+Tailwind UI,Shadcn UI,Component Libraries,Frontend teams deciding between paid copy-paste components and accessible Radix primitives
+Chakra UI,Mantine,React Component Frameworks,Developers comparing customizable React design system toolkits
+Pinecone,Qdrant,Vector Databases,AI teams evaluating managed vector cloud infrastructure vs rust-based high-performance search
+Chroma,Milvus,Vector Search Engines,Machine learning engineers deploying local embeddings vs enterprise distributed search
+ClickHouse,Snowflake,Analytical Data Warehouses,Data engineers comparing real-time open-source columnar storage with cloud enterprise warehouses
+BigQuery,Snowflake,Cloud Data Warehouses,Enterprise data architects choosing between Google serverless analytics and multi-cloud warehousing
+GitHub Actions,GitLab CI,CI/CD Pipelines,DevOps engineers comparing repository-native automation workflows
+CircleCI,GitHub Actions,Continuous Integration,Teams migrating from dedicated CI platforms to integrated GitHub runners
+Terraform,Pulumi,Infrastructure as Code,Cloud architects deciding between declarative HCL and real programming languages
+Kubernetes,Docker Swarm,Container Orchestration,DevOps evaluating production scale multi-node clusters vs lightweight container orchestration
+Grafana,Datadog,Observability & Dashboards,DevOps teams comparing open-source visualization with all-in-one commercial monitoring
+Better Stack,PagerDuty,Incident Management,Engineering teams evaluating modern developer UX alerting vs legacy enterprise on-call
+Upstash,Redis Cloud,Serverless Redis,Developers requiring pay-per-request Redis with REST APIs vs managed clusters
+Turso,Supabase,Edge Data Storage,Engineers comparing libSQL edge SQLite databases with managed PostgreSQL
+Kinde,Clerk,Authentication & User Management,Founders choosing modern developer-friendly auth providers with generous free tiers
+WorkOS,Auth0,Enterprise Identity & SSO,SaaS teams adding SAML Single Sign-On and directory sync for enterprise tiers
+Lemonsqueezy,Stripe,Merchant of Record & Payments,Digital product creators deciding between automated global tax MoR and direct merchant gateways
+Shopify,WooCommerce,E-Commerce Platforms,Founders comparing hosted enterprise commerce with open-source WordPress flexibility
+Segment,RudderStack,Customer Data Platforms,Growth engineers choosing between managed analytics routing and open-source data pipelines
+Mixpanel,PostHog,Product Analytics,Product teams evaluating event-based funnel tracking vs open-source all-in-one product suites
+Amplitude,Mixpanel,User Behavior Analytics,Growth teams comparing advanced enterprise cohorts with flexible self-serve analytics
+Algolia,Meilisearch,Search Engine APIs,Developers deciding between hosted instant search APIs and open-source typo-tolerant engines
+Typesense,Algolia,Search as a Service,Engineers seeking affordable open-source search alternatives to expensive commercial tiers
