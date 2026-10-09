@@ -7,14 +7,35 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "python ../generate_pseo.py && astro build",
+    "build": "astro build",
+    "generate:catalog": "node scripts/generate-catalog.ts",
+    "generate:llm": "python ../generate_pseo.py",
+    "build:full": "npm run generate:llm && npm run generate:catalog && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "astro check"
   },
   "dependencies": {
+    "@astrojs/markdown-remark": "^7.3.2",
+    "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
+    "@fontsource/inter": "^5.3.0",
+    "@resvg/resvg-js": "^2.6.2",
     "astro": "^7.3.6",
-    "fuse.js": "^7.5.0"
+    "fuse.js": "^7.5.0",
+    "js-yaml": "^5.4.3",
+    "satori": "^0.44.0",
+    "typeface-inter": "^3.18.1",
+    "typeface-roboto": "^1.1.13"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/js-yaml": "^4.0.9",
+    "prettier": "^3.9.9",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript": "^6.0.3"
   },
   "allowScripts": {
     "esbuild": true

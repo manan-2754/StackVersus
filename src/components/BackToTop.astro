@@ -1,0 +1,76 @@
+<button type="button" class="back-to-top" id="back-to-top" aria-label="Back to top" title="Back to top">
+  <span aria-hidden="true">↑</span>
+</button>
+
+<script>
+  const btn = document.getElementById('back-to-top');
+
+  function toggleVisibility() {
+    if (!btn) return;
+    const scrolled = window.scrollY || document.documentElement.scrollTop;
+    if (scrolled > 600) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  }
+
+  if (btn) {
+    btn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  window.addEventListener('scroll', toggleVisibility, { passive: true });
+  toggleVisibility();
+</script>
+
+<style>
+  .back-to-top {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 100;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--z-border);
+    border-radius: 50%;
+    background: var(--z-card);
+    color: var(--z-lime);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition:
+      opacity 0.3s ease,
+      visibility 0.3s ease,
+      transform 0.3s ease,
+      border-color 0.3s ease,
+      background 0.3s ease;
+  }
+
+  .back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .back-to-top:hover,
+  .back-to-top:focus-visible {
+    background: var(--z-card-hover);
+    border-color: var(--z-lime);
+    box-shadow: 0 0 18px var(--z-lime-glow);
+    outline: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .back-to-top {
+      transition: none;
+    }
+  }
+</style>

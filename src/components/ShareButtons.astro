@@ -1,0 +1,102 @@
+---
+export interface Props {
+  title: string;
+  url: string;
+}
+
+const { title, url } = Astro.props;
+
+const encodedTitle = encodeURIComponent(title);
+const encodedUrl = encodeURIComponent(url);
+
+const links = [
+  {
+    name: 'X / Twitter',
+    href: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`,
+  },
+  {
+    name: 'LinkedIn',
+    href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+  },
+  {
+    name: 'Copy Link',
+    href: '#',
+    copy: true,
+  },
+];
+---
+
+<div class="share-bar" aria-label="Share this comparison">
+  <span class="share-label">Share</span>
+  {
+    links.map((link) => (
+      <a
+        href={link.href}
+        class={`share-btn ${link.copy ? 'copy-btn' : ''}`}
+        data-copy-url={url}
+        target={link.copy ? undefined : '_blank'}
+        rel={link.copy ? undefined : 'noopener noreferrer'}
+      >
+        {link.name}
+      </a>
+    ))
+  }
+</div>
+
+<script>
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (target?.classList.contains('copy-btn')) {
+      e.preventDefault();
+      const url = target.getAttribute('data-copy-url');
+      if (url && navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+          const original = target.textContent;
+          target.textContent = 'Copied!';
+          setTimeout(() => {
+            target.textContent = original;
+          }, 1500);
+        });
+      }
+    }
+  });
+</script>
+
+<style>
+  .share-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+    padding-top: 28px;
+    border-top: 1px solid var(--z-border);
+  }
+
+  .share-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--z-muted);
+  }
+
+  .share-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--z-primary);
+    text-decoration: none;
+    padding: 6px 14px;
+    border: 1px solid rgba(106, 75, 205, 0.3);
+    border-radius: 999px;
+    transition: all 0.2s ease;
+  }
+
+  .share-btn:hover,
+  .share-btn:focus-visible {
+    background: var(--z-primary);
+    color: #ffffff;
+    outline: none;
+  }
+</style>

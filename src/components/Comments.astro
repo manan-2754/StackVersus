@@ -1,0 +1,254 @@
+---
+export interface Props {
+  pageId: string;
+}
+
+const { pageId } = Astro.props;
+---
+
+<section class="comments-section" aria-labelledby="comments-heading">
+  <h2 id="comments-heading" class="comments-title">Discussion</h2>
+
+  <form class="comment-form" id="comment-form" data-page-id={pageId}>
+    <label for="comment-author" class="sr-only">Name</label>
+    <input id="comment-author" name="author" type="text" placeholder="Your name" required class="comment-input" />
+    <label for="comment-body" class="sr-only">Comment</label>
+    <textarea
+      id="comment-body"
+      name="body"
+      rows="3"
+      placeholder="Share your experience or ask a question..."
+      required
+      class="comment-input"></textarea>
+    <button type="submit" class="comment-submit">Post comment</button>
+  </form>
+
+  <div id="comments-list" class="comments-list" role="list">
+    <p class="comments-empty">No comments yet. Start the conversation.</p>
+  </div>
+</section>
+
+<script define:vars={{ pageId }}>
+  const STORAGE_KEY = `sv-comments-${pageId}`;
+
+  const form = document.getElementById('comment-form');
+  const list = document.getElementById('comments-list');
+  const authorInput = document.getElementById('comment-author');
+  const bodyInput = document.getElementById('comment-body');
+
+  function loadComments() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveComments(comments) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  }
+
+  function timeAgo(date) {
+    const s = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+    if (s < 60) return 'just now';
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    const d = Math.floor(h / 24);
+    return `${d}d ago`;
+  }
+
+  function render() {
+    const comments = loadComments().sort((a, b) => b.score - a.score);
+    if (comments.length === 0) {
+      list.innerHTML = '<p class="comments-empty">No comments yet. Start the conversation.</p>';
+      return;
+    }
+    list.innerHTML = comments
+      .map(
+        (c) => `
+        <article class="comment" role="listitem" data-id="${c.id}">
+          <div class="comment-votes">
+            <button type="button" class="vote-btn up" data-dir="1" aria-label="Upvote">▲</button>
+            <span class="vote-score">${c.score}</span>
+            <button type="button" class="vote-btn down" data-dir="-1" aria-label="Downvote">▼</button>
+          </div>
+          <div class="comment-body">
+            <div class="comment-meta">
+              <strong>${escapeHtml(c.author)}</strong>
+              <span>·</span>
+              <span>${timeAgo(c.createdAt)}</span>
+            </div>
+            <p>${escapeHtml(c.body)}</p>
+          </div>
+        </article>
+      `
+      )
+      .join('');
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const author = authorInput.value.trim();
+      const body = bodyInput.value.trim();
+      if (!author || !body) return;
+      const comments = loadComments();
+      comments.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+        author,
+        body,
+        score: 1,
+        createdAt: new Date().toISOString(),
+      });
+      saveComments(comments);
+      bodyInput.value = '';
+      render();
+    });
+  }
+
+  if (list) {
+    list.addEventListener('click', (e) => {
+      const btn = e.target.closest('.vote-btn');
+      if (!btn) return;
+      const id = btn.closest('.comment')?.getAttribute('data-id');
+      const dir = parseInt(btn.getAttribute('data-dir'), 10);
+      const comments = loadComments();
+      const c = comments.find((x) => x.id === id);
+      if (c) {
+        c.score += dir;
+        saveComments(comments);
+        render();
+      }
+    });
+  }
+
+  render();
+</script>
+
+<style is:global>
+  .comments-section {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--z-border);
+  }
+  .comments-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--z-text);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  .comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .comment-input {
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--z-border);
+    background: var(--z-surface);
+    color: var(--z-text);
+    font-size: 0.92rem;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+  }
+  .comment-input:focus {
+    border-color: var(--z-primary);
+    box-shadow: 0 0 12px var(--z-primary-glow);
+  }
+  .comment-submit {
+    align-self: flex-start;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    background: var(--z-primary);
+    border: none;
+    border-radius: 999px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .comment-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(106, 75, 205, 0.25);
+  }
+  .comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .comments-empty {
+    color: var(--z-muted);
+    font-size: 0.9rem;
+  }
+  .comment {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: var(--z-surface);
+    border: 1px solid var(--z-border);
+    border-radius: 14px;
+  }
+  .comment-votes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .vote-btn {
+    background: transparent;
+    border: none;
+    color: var(--z-muted);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 2px;
+    transition: color 0.15s ease;
+  }
+  .vote-btn:hover {
+    color: var(--z-primary);
+  }
+  .vote-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--z-text);
+  }
+  .comment-body {
+    flex: 1;
+  }
+  .comment-meta {
+    font-size: 0.8rem;
+    color: var(--z-muted);
+    margin-bottom: 6px;
+  }
+  .comment-meta strong {
+    color: var(--z-text);
+  }
+  .comment-body p {
+    color: var(--z-text);
+    line-height: 1.5;
+    margin: 0;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

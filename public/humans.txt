@@ -1,0 +1,11 @@
+/* TEAM */
+Site: StackVersus
+Contact: team@stackversus.pages.dev
+
+/* THANKS */
+Astro: https://astro.build
+
+/* SITE */
+Last update: 2026-10-08
+Language: English
+Doctype: HTML5

@@ -1,0 +1,80 @@
+---
+import ContentPage from '../layouts/ContentPage.astro';
+
+const siteUrl = 'https://stackversus.pages.dev';
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Home',
+      item: siteUrl,
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Privacy Policy',
+      item: `${siteUrl}/privacy-policy`,
+    },
+  ],
+};
+---
+
+<ContentPage
+  title="Privacy Policy — StackVersus"
+  description="Read how StackVersus handles visitor data, cookies, analytics, and affiliate links."
+  canonical={`${siteUrl}/privacy-policy`}
+  schema={breadcrumbSchema}
+>
+  <h1 slot="heading">Privacy Policy</h1>
+
+  <p>
+    StackVersus is committed to protecting your privacy. This policy explains what information we collect, how we use
+    it, and your rights as a visitor.
+  </p>
+
+  <h2>Information We Collect</h2>
+  <p>
+    We do not require visitors to create accounts or submit personal information to browse the site. Our hosting and
+    analytics providers may collect standard technical data such as IP addresses, browser types, pages visited, and
+    referring URLs for the purpose of performance and security monitoring.
+  </p>
+
+  <h2>Cookies and Tracking</h2>
+  <p>
+    StackVersus uses privacy-first analytics that do not track individuals across the web or sell personal data. We do
+    not use invasive advertising trackers or third-party advertising cookies.
+  </p>
+
+  <h2>Affiliate Links</h2>
+  <p>
+    Some outbound links to software tools are affiliate or referral links. When you click these links and make a
+    purchase, we may receive a commission at no extra cost to you. Affiliate partnerships do not influence our editorial
+    evaluations.
+  </p>
+
+  <h2>Data Retention</h2>
+  <p>
+    Analytics data is retained only as long as necessary to understand site performance and improve content. We do not
+    retain personally identifiable information beyond what is required by our hosting provider.
+  </p>
+
+  <h2>Your Rights</h2>
+  <p>
+    Depending on your jurisdiction, you may have rights to access, correct, or delete personal data. Because we do not
+    directly collect personal data, most requests should be directed to our hosting or analytics providers.
+  </p>
+
+  <h2>Changes to This Policy</h2>
+  <p>
+    We may update this Privacy Policy periodically. Changes will be posted on this page with an updated effective date.
+  </p>
+
+  <p>
+    <strong>Effective date:</strong>
+    {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+  </p>
+</ContentPage>

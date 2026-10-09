@@ -1,0 +1,103 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HudBar from '../components/HudBar.astro';
+---
+
+<BaseLayout
+  title="404 — Comparison Not Found | StackVersus"
+  description="The benchmark you're looking for doesn't exist. Explore our full matrix of developer tool comparisons."
+  robots="noindex, follow"
+>
+  <div class="viewport-wrapper">
+    <HudBar left="StackVersus // Error State" right="Code: 404" />
+
+    <main class="error-panel" id="main-content">
+      <div class="error-code">404</div>
+      <h1>Benchmark Not Found</h1>
+      <p>
+        The comparison or category you requested isn't in our current matrix. It may have been moved, renamed, or is
+        still being benchmarked.
+      </p>
+      <div class="actions">
+        <a href="/" class="cta">← Back to Main Arena</a>
+        <a href="/about/" class="secondary">Read Our Methodology</a>
+      </div>
+    </main>
+  </div>
+
+  <style>
+    .error-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 70vh;
+      text-align: center;
+    }
+
+    .error-code {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(6rem, 18vw, 12rem);
+      font-weight: 800;
+      line-height: 1;
+      color: rgba(106, 75, 205, 0.15);
+      -webkit-text-stroke: 1px var(--z-primary);
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--z-text);
+      margin: 16px 0 18px;
+    }
+
+    p {
+      color: var(--z-muted);
+      max-width: 540px;
+      margin-bottom: 36px;
+      line-height: 1.6;
+    }
+
+    .actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .actions a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 999px;
+      transition: all 0.25s ease;
+    }
+
+    .cta {
+      background: var(--z-primary);
+      color: #ffffff;
+    }
+    .cta:hover,
+    .cta:focus-visible {
+      box-shadow: 0 0 20px var(--z-primary-glow);
+      transform: translateY(-2px);
+    }
+
+    .secondary {
+      background: var(--z-surface);
+      color: var(--z-text);
+      border: 1px solid var(--z-border);
+    }
+    .secondary:hover,
+    .secondary:focus-visible {
+      border-color: var(--z-primary);
+      color: var(--z-primary);
+    }
+  </style>
+</BaseLayout>

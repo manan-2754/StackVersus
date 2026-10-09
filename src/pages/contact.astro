@@ -1,0 +1,139 @@
+---
+import ContentPage from '../layouts/ContentPage.astro';
+
+const contactAction = import.meta.env.PUBLIC_CONTACT_ACTION || '';
+const useMailto = !contactAction;
+
+const pageSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  name: 'Contact & Corrections',
+  url: 'https://stackversus.pages.dev/contact/',
+  description: 'Report an inaccuracy, suggest a new comparison, or ask a question about StackVersus.',
+};
+---
+
+<ContentPage
+  title="Contact & Corrections"
+  description="Report an inaccuracy, suggest a new comparison, or ask a question about StackVersus."
+  canonical="https://stackversus.pages.dev/contact/"
+  schema={pageSchema}
+>
+  <h1 slot="heading">Contact & Corrections</h1>
+
+  <p>
+    We aim for every comparison to be accurate, current, and fair. If you spot a mistake, outdated pricing, or a missing
+    tool, let us know and we'll review it.
+  </p>
+
+  <h2>How to reach us</h2>
+  <ul>
+    <li><strong>Email:</strong> <a href="mailto:team@stackversus.pages.dev">team@stackversus.pages.dev</a></li>
+    <li>
+      <strong>Correction form:</strong> use the form below and we'll route it straight to our editorial queue.
+    </li>
+  </ul>
+
+  <h2>Send a correction or suggestion</h2>
+  <form
+    class="contact-form"
+    action={useMailto
+      ? 'mailto:team@stackversus.pages.dev?subject=StackVersus%20Correction%20or%20Suggestion'
+      : contactAction}
+    method={useMailto ? 'post' : 'post'}
+    enctype={useMailto ? 'text/plain' : undefined}
+  >
+    <label for="name">Name</label>
+    <input id="name" name="name" type="text" placeholder="Your name" />
+
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" placeholder="you@example.com" required />
+
+    <label for="page">Page URL (optional)</label>
+    <input id="page" name="page" type="url" placeholder="https://stackversus.pages.dev/comparisons/..." />
+
+    <label for="message">Message</label>
+    <textarea id="message" name="message" rows="5" placeholder="Describe the correction or suggestion..." required
+    ></textarea>
+
+    <button type="submit">Send message</button>
+  </form>
+
+  <h2>What we need from you</h2>
+  <ul>
+    <li>The comparison URL and section where the issue appears.</li>
+    <li>A clear description of what's wrong or missing.</li>
+    <li>A link to an official source or benchmark, if possible.</li>
+  </ul>
+
+  <script>
+    const pageParam = new URLSearchParams(window.location.search).get('page');
+    const pageInput = document.getElementById('page') as HTMLInputElement | null;
+    if (pageParam && pageInput && !pageInput.value) pageInput.value = pageParam;
+  </script>
+
+  <style is:global>
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin: 28px 0 40px;
+    }
+
+    .contact-form label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--z-muted);
+    }
+
+    .contact-form input,
+    .contact-form textarea {
+      background: var(--z-surface);
+      border: 1px solid var(--z-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--z-text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .contact-form input:focus,
+    .contact-form textarea:focus {
+      border-color: var(--z-primary);
+      box-shadow: 0 0 14px var(--z-primary-glow);
+    }
+
+    .contact-form input::placeholder,
+    .contact-form textarea::placeholder {
+      color: var(--z-muted);
+    }
+
+    .contact-form button {
+      align-self: flex-start;
+      background: var(--z-primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+
+    .contact-form button:hover,
+    .contact-form button:focus-visible {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(106, 75, 205, 0.25);
+      outline: none;
+    }
+  </style>
+</ContentPage>

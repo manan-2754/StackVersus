@@ -1,13 +1,19 @@
 ---
 import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import HudBar from '../../components/HudBar.astro';
+import Footer from '../../components/Footer.astro';
 
 export async function getStaticPaths() {
   const allComparisons = await getCollection('comparisons');
-  
+
   const categories = [...new Set(allComparisons.map((item) => item.data.category || 'Developer Tools'))];
 
   return categories.map((cat) => {
-    const slug = cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const slug = cat
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
     return {
       params: { category: slug },
       props: {
@@ -19,209 +25,178 @@ export async function getStaticPaths() {
 }
 
 const { categoryName, items } = Astro.props;
+const siteUrl = 'https://stackversus.pages.dev';
+const pageUrl = `${siteUrl}/categories/${categoryName
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/(^-|-$)/g, '')}/`;
 
 const collectionSchema = {
-  "@context": "https://schema.org",
-  "@type": "CollectionPage",
-  "name": `${categoryName} Software Comparisons`,
-  "description": `Compare architectural benchmarks and pricing models for tools in ${categoryName}.`,
-  "numberOfItems": items.length
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: `${categoryName} Software Comparisons`,
+  description: `Compare architectural benchmarks and pricing models for tools in ${categoryName}.`,
+  numberOfItems: items.length,
+  url: pageUrl,
+};
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Home',
+      item: siteUrl,
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Categories',
+      item: `${siteUrl}/categories/`,
+    },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: categoryName,
+      item: pageUrl,
+    },
+  ],
+};
+
+const itemListSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  itemListElement: items.map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    url: `${siteUrl}/comparisons/${item.id.replace(/\.md$/, '')}/`,
+    name: item.data.title,
+  })),
 };
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{categoryName} Comparisons & Benchmarks — StackVersus</title>
-    <meta name="description" content={`Explore in-depth technical comparisons, pros, cons, and pricing for ${categoryName} software.`} />
-    
-    <script type="application/ld+json" set:html={JSON.stringify(collectionSchema)} />
+<BaseLayout
+  title={`${categoryName} Comparisons & Benchmarks — StackVersus`}
+  description={`Explore in-depth technical comparisons, pros, cons, and pricing for ${categoryName} software.`}
+  canonical={pageUrl}
+  ogType="website"
+  schema={[collectionSchema, breadcrumbSchema, itemListSchema]}
+>
+  <div class="viewport-wrapper">
+    <HudBar left="StackVersus // Category Index" right={`Total Comparisons: ${items.length}`} />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <nav class="subnav" aria-label="Breadcrumb">
+      <a href="/" class="back-btn">
+        <span aria-hidden="true">←</span>
+        <span>Back to Main Arena</span>
+      </a>
+    </nav>
 
-    <style is:global>
-      :root {
-        --z-black: #060707;
-        --z-card: rgba(14, 16, 15, 0.72);
-        --z-card-hover: rgba(22, 26, 24, 0.85);
-        --z-border: rgba(255, 255, 255, 0.08);
-        --z-border-glow: rgba(34, 229, 118, 0.4);
-        --z-lime: #22E576;
-        --z-lime-glow: rgba(34, 229, 118, 0.35);
-        --z-coral: #FF385C;
-        --z-text: #F2F2F2;
-        --z-muted: #8E928E;
-      }
+    <header id="main-content">
+      <h1>
+        Top <span class="category-highlight">{categoryName}</span> Tools
+      </h1>
+      <p>
+        Explore {items.length} head-to-head {categoryName.toLowerCase()} comparisons. Each benchmark covers performance, pricing,
+        architecture, and the ideal use case so you can pick the right tool the first time.
+      </p>
+    </header>
 
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-
-      body {
-        font-family: 'Inter', sans-serif;
-        background-color: var(--z-black);
-        color: var(--z-text);
-        min-height: 100vh;
-        overflow-x: hidden;
-      }
-
-      .viewport-wrapper {
-        position: relative;
-        z-index: 1;
-        width: 95%;
-        max-width: 1720px;
-        margin: 0 auto;
-        padding: clamp(16px, 3vw, 28px) 0 100px;
-      }
-
-      .hud-topbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 24px;
-        border-bottom: 1px solid var(--z-border);
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.76rem;
-        color: var(--z-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-
-      .subnav {
-        margin: 28px 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .back-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.8rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #ffffff;
-        text-decoration: none;
-        padding: 8px 20px;
-        border-radius: 999px;
-        background: rgba(14, 18, 16, 0.8);
-        border: 1px solid var(--z-border);
-        transition: all 0.25s ease;
-      }
-
-      .back-btn:hover {
-        background: var(--z-lime);
-        color: #000000;
-        box-shadow: 0 0 18px var(--z-lime-glow);
-      }
-
-      header {
-        margin-bottom: 40px;
-      }
-
-      h1 {
-        font-family: 'Syne', sans-serif;
-        font-size: clamp(2.2rem, 4.5vw, 3.8rem);
-        font-weight: 800;
-        line-height: 1.1;
-        letter-spacing: -0.03em;
-        text-transform: uppercase;
-        color: #ffffff;
-      }
-
-      .category-highlight {
-        color: var(--z-lime);
-      }
-
-      header p {
-        font-size: 1.05rem;
-        color: var(--z-muted);
-        max-width: 600px;
-        margin-top: 12px;
-      }
-
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 22px;
-      }
-
-      .card {
-        background: var(--z-card);
-        border: 1px solid var(--z-border);
-        border-radius: 18px;
-        padding: 26px;
-        text-decoration: none;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        transition: transform 0.3s ease, border-color 0.3s ease;
-      }
-
-      .card:hover {
-        background: var(--z-card-hover);
-        transform: translateY(-5px);
-        border-color: var(--z-border-glow);
-      }
-
-      .card h2 {
-        font-family: 'Syne', sans-serif;
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #ffffff;
-        margin-bottom: 10px;
-      }
-
-      .card p {
-        font-size: 0.9rem;
-        color: var(--z-muted);
-        line-height: 1.6;
-        margin-bottom: 22px;
-      }
-
-      .action-pill {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: var(--z-coral);
-      }
-    </style>
-  </head>
-  <body>
-    <div class="viewport-wrapper">
-      <div class="hud-topbar">
-        <div>StackVersus // Category Index</div>
-        <div>Total Comparisons: {items.length}</div>
-      </div>
-
-      <nav class="subnav">
-        <a href="/" class="back-btn">← Back to Main Arena</a>
-      </nav>
-
-      <header>
-        <h1>
-          Top <span class="category-highlight">{categoryName}</span> Tools
-        </h1>
-        <p>Architectural evaluations, latency benchmarks, and pricing audits for {categoryName}.</p>
-      </header>
-
-      <main class="grid">
-        {items.map((item) => (
-          <a href={`/comparisons/${item.id.replace(/\.md$/, '')}`} class="card">
-            <div>
-              <h2>{item.data.title}</h2>
-              <p>{item.data.description}</p>
-            </div>
-            <div>
-              <span class="action-pill">Launch Specs →</span>
-            </div>
+    <main class="grid">
+      {
+        items.map((item) => (
+          <a href={`/comparisons/${item.id.replace(/\.md$/, '')}/`} class="card stack-3d">
+            <h2>{item.data.title}</h2>
+            <p>{item.data.description}</p>
+            <span class="card-cta stack-cta">
+              Open comparison <span class="arrow">→</span>
+            </span>
           </a>
-        ))}
-      </main>
-    </div>
-  </body>
-</html>
+        ))
+      }
+    </main>
+
+    <Footer />
+  </div>
+
+  <style>
+    .subnav {
+      margin: 28px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header {
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      color: var(--z-text);
+    }
+
+    .category-highlight {
+      color: var(--z-primary);
+    }
+
+    header p {
+      font-size: 1.05rem;
+      color: var(--z-muted);
+      max-width: 600px;
+      margin-top: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 22px;
+    }
+
+    .card {
+      background: var(--z-card);
+      border: 1px solid var(--z-border);
+      border-radius: 18px;
+      padding: 26px;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition:
+        transform 0.3s ease,
+        border-color 0.3s ease;
+    }
+
+    .card:hover,
+    .card:focus-visible {
+      background: var(--z-card-hover);
+      outline: none;
+    }
+
+    .card h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--z-text);
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: var(--z-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .card-cta {
+      align-self: flex-start;
+    }
+  </style>
+</BaseLayout>

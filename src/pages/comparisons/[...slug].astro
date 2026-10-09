@@ -1,607 +1,1107 @@
 ﻿---
+import fs from 'node:fs';
+import path from 'node:path';
 import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import HudBar from '../../components/HudBar.astro';
+import Footer from '../../components/Footer.astro';
+import RibbonCanvas from '../../components/RibbonCanvas.astro';
+import ShareButtons from '../../components/ShareButtons.astro';
+import Comments from '../../components/Comments.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('comparisons');
-  return posts.map(entry => ({
+  return posts.map((entry) => ({
     params: { slug: entry.id.replace(/\.md$/, '') },
     props: { entry },
   }));
 }
 
+function formatToolName(str: string) {
+  return str
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+}
+
+function parseFAQ(body: string) {
+  const faqs: { question: string; answer: string }[] = [];
+  const sectionMatch = body.match(/##\s*Frequently Asked Questions[\s\S]*$/i);
+  if (!sectionMatch) return faqs;
+  const section = sectionMatch[0];
+  const questionRegex = /^###\s*(.+)[\r\n]+([\s\S]*?)(?=^###|\z)/gm;
+  let match;
+  while ((match = questionRegex.exec(section)) !== null) {
+    const question = match[1].trim();
+    const answer = match[2].trim().replace(/\n/g, ' ');
+    if (question && answer) faqs.push({ question, answer });
+  }
+  return faqs;
+}
+
 const { entry } = Astro.props;
 const { Content } = await render(entry);
 
-// 1. Fetch related comparisons from the same category
-const allComparisons = await getCollection('comparisons');
-const currentCategory = entry.data.category || 'Developer Tools';
+const siteUrl = 'https://stackversus.pages.dev';
 const currentSlug = entry.data.slug || entry.id.replace(/\.md$/, '');
+const pageUrl = `${siteUrl}/comparisons/${currentSlug}/`;
+const currentCategory = entry.data.category || 'Developer Tools';
+const categorySlug = slugify(currentCategory);
 
+const allComparisons = await getCollection('comparisons');
 const relatedComparisons = allComparisons
-  .filter((item) => {
-    const itemCategory = item.data.category || 'Developer Tools';
-    const itemSlug = item.data.slug || item.id.replace(/\.md$/, '');
-    return itemCategory === currentCategory && itemSlug !== currentSlug;
-  })
-  .slice(0, 3);
+  .filter(
+    (item) =>
+      (item.data.category || 'Developer Tools') === currentCategory &&
+      (item.data.slug || item.id.replace(/\.md$/, '')) !== currentSlug
+  )
+  .slice(0, 4);
 
-// 2. Extract tool names safely with clean title formatting
 const slugParts = currentSlug.split('-vs-');
-const formatToolName = (str: string) =>
-  str
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-
 const toolA = entry.data.tool_a || (slugParts[0] ? formatToolName(slugParts[0]) : 'Tool A');
 const toolB = entry.data.tool_b || (slugParts[1] ? formatToolName(slugParts[1]) : 'Tool B');
 
-// 3. JSON-LD Structured Data Schemas (Optimized for Google Rich Snippets)
-const faqSchema = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": `Is ${toolA} better than ${toolB}?`,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": entry.data.description
-      }
-    },
-    {
-      "@type": "Question",
-      "name": `How do ${toolA} and ${toolB} compare in pricing?`,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": `${toolA} and ${toolB} have different pricing models depending on team scale and architecture. Check our breakdown table above for exact tier specs.`
-      }
-    }
-  ]
+let datePublished = '';
+let dateModified = '';
+if (entry.data.date || entry.data.lastmod) {
+  datePublished = new Date(entry.data.date || entry.data.lastmod || Date.now()).toISOString();
+  dateModified = new Date(entry.data.lastmod || entry.data.date || Date.now()).toISOString();
+} else {
+  try {
+    const stats = fs.statSync(path.resolve(entry.filePath || ''));
+    datePublished = stats.birthtime.toISOString();
+    dateModified = stats.mtime.toISOString();
+  } catch {
+    const now = new Date().toISOString();
+    datePublished = now;
+    dateModified = now;
+  }
+}
+
+const wordCount = (entry.body || '').split(/\s+/).filter(Boolean).length;
+const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+const formattedDate = new Date(dateModified).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+
+const tocHeadings = (entry.body || '')
+  .split('\n')
+  .filter((line) => line.startsWith('## '))
+  .map((line) => ({ title: line.replace(/^##\s*/, '').trim(), slug: slugify(line.replace(/^##\s*/, '')) }))
+  .filter((h) => h.title && h.slug && h.title !== 'Frequently Asked Questions');
+
+const metrics = {
+  performance: entry.data.metrics?.performance ?? 0,
+  ecosystem: entry.data.metrics?.ecosystem ?? 0,
+  learning_curve: entry.data.metrics?.learning_curve ?? 0,
+  community: entry.data.metrics?.community ?? 0,
+};
+const hasMetrics = Object.values(metrics).some((v) => v > 0);
+const useCases = entry.data.use_cases || [];
+const difficulty = entry.data.difficulty || 'Intermediate';
+const popularity = entry.data.popularity ?? 50;
+const verdict = entry.data.verdict || '';
+const faqs = parseFAQ(entry.body || '');
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${siteUrl}/` },
+    { '@type': 'ListItem', position: 2, name: currentCategory, item: `${siteUrl}/categories/${categorySlug}/` },
+    { '@type': 'ListItem', position: 3, name: entry.data.title, item: pageUrl },
+  ],
+};
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: entry.data.title,
+  description: entry.data.description,
+  url: pageUrl,
+  datePublished,
+  dateModified,
+  author: { '@type': 'Organization', name: 'StackVersus', url: siteUrl },
+  publisher: { '@type': 'Organization', name: 'StackVersus', url: siteUrl },
 };
 
 const productSchema = {
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": `${toolA} vs ${toolB} Comparison`,
-  "applicationCategory": "DeveloperApplication",
-  "operatingSystem": "Cloud / Platform Independent",
-  "description": entry.data.description,
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.8",
-    "reviewCount": "128",
-    "bestRating": "5",
-    "worstRating": "1"
-  },
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  }
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: `${toolA} vs ${toolB} Comparison`,
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Cloud / Platform Independent',
+  description: entry.data.description,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
 };
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.length
+    ? faqs.map((f) => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: { '@type': 'Answer', text: f.answer },
+      }))
+    : [
+        {
+          '@type': 'Question',
+          name: `Is ${toolA} better than ${toolB}?`,
+          acceptedAnswer: { '@type': 'Answer', text: entry.data.description },
+        },
+        {
+          '@type': 'Question',
+          name: `How do ${toolA} and ${toolB} compare in pricing?`,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: `${toolA} and ${toolB} have different pricing models depending on team scale and architecture.`,
+          },
+        },
+      ],
+};
+
+const schema = [breadcrumbSchema, articleSchema, productSchema, faqSchema];
+
+function toolSlug(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{entry.data.title} — StackVersus</title>
-    <meta name="description" content={entry.data.description} />
-    
-    <!-- Google Rich Snippet JSON-LD Markup -->
-    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
-    <script type="application/ld+json" set:html={JSON.stringify(productSchema)} />
+<BaseLayout
+  title={`${entry.data.title} — StackVersus`}
+  description={entry.data.description}
+  canonical={pageUrl}
+  ogType="article"
+  ogTitle={entry.data.title}
+  ogDescription={entry.data.description}
+  ogImage={`${siteUrl}/og/comparisons/${currentSlug}.png`}
+  schema={schema}
+>
+  <RibbonCanvas />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-    
-    <style is:global>
-      :root {
-        --z-black: #060707;
-        --z-card: rgba(14, 16, 15, 0.72);
-        --z-card-hover: rgba(22, 26, 24, 0.85);
-        --z-border: rgba(255, 255, 255, 0.08);
-        --z-border-glow: rgba(34, 229, 118, 0.4);
-        --z-lime: #22E576;
-        --z-lime-glow: rgba(34, 229, 118, 0.35);
-        --z-coral: #FF385C;
-        --z-gold: #FFC043;
-        --z-text: #F2F2F2;
-        --z-muted: #8E928E;
-      }
+  <div class="viewport-wrapper comparison-wrapper">
+    <HudBar left={`Comparisons // ${currentCategory}`} center="Engine: StackVersus Matrix" right="State: Live" />
 
-      * { box-sizing: border-box; margin: 0; padding: 0; }
+    <nav class="subnav" aria-label="Breadcrumb">
+      <a href="/" class="back-btn">← Back to Explore</a>
+      <a href={`/categories/${categorySlug}/`} class="category-chip">{currentCategory}</a>
+    </nav>
 
-      body {
-        font-family: 'Inter', sans-serif;
-        background-color: var(--z-black);
-        color: var(--z-text);
-        min-height: 100vh;
-        overflow-x: hidden;
-      }
-
-      #zajno-motion-canvas {
-        position: fixed;
-        inset: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 0;
-        pointer-events: none;
-      }
-
-      .viewport-wrapper {
-        position: relative;
-        z-index: 1;
-        width: 95%;
-        max-width: 1720px;
-        margin: 0 auto;
-        padding: 28px 0 100px;
-      }
-
-      .hud-topbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 24px;
-        border-bottom: 1px solid var(--z-border);
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.76rem;
-        color: var(--z-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-
-      .hud-live {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--z-lime);
-      }
-      .hud-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--z-lime);
-        box-shadow: 0 0 10px var(--z-lime);
-        animation: pulse 1.8s infinite;
-      }
-
-      @keyframes pulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.4; transform: scale(0.8); }
-      }
-
-      .subnav {
-        margin: 32px 0 24px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .back-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.8rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #ffffff;
-        text-decoration: none;
-        padding: 8px 20px;
-        border-radius: 999px;
-        background: rgba(14, 18, 16, 0.8);
-        border: 1px solid var(--z-border);
-        backdrop-filter: blur(16px);
-        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-      .back-btn:hover {
-        background: var(--z-lime);
-        color: #000000;
-        border-color: var(--z-lime);
-        box-shadow: 0 0 18px var(--z-lime-glow);
-        transform: translateX(-4px);
-      }
-
-      .spec-tag {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.75rem;
-        color: var(--z-lime);
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      .editorial-workspace {
-        background: var(--z-card);
-        border: 1px solid var(--z-border);
-        border-radius: 22px;
-        padding: clamp(32px, 4vw, 64px);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
-      }
-
-      .editorial-workspace h1 {
-        font-family: 'Syne', sans-serif;
-        font-size: clamp(2.4rem, 4.8vw, 4.4rem);
-        font-weight: 800;
-        line-height: 1.08;
-        letter-spacing: -0.04em;
-        text-transform: uppercase;
-        color: #ffffff;
-        margin-bottom: 24px;
-      }
-
-      .editorial-workspace h1 .kinetic-accent {
-        background: linear-gradient(90deg, #FFFFFF 10%, var(--z-lime) 50%, var(--z-coral) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-
-      .editorial-workspace h2 {
-        font-family: 'Syne', sans-serif;
-        font-size: clamp(1.4rem, 2.2vw, 1.9rem);
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: -0.02em;
-        color: #ffffff;
-        margin: 44px 0 18px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid var(--z-border);
-      }
-
-      .editorial-workspace h3 {
-        font-family: 'Syne', sans-serif;
-        font-size: 1.35rem;
-        font-weight: 700;
-        color: var(--z-lime);
-        margin: 32px 0 12px;
-      }
-
-      .editorial-workspace p {
-        font-size: 1.04rem;
-        color: var(--z-text);
-        line-height: 1.7;
-        margin-bottom: 18px;
-      }
-
-      .editorial-workspace blockquote {
-        background: linear-gradient(135deg, rgba(34, 229, 118, 0.1), rgba(14, 18, 16, 0.8));
-        border-left: 4px solid var(--z-lime);
-        border-radius: 12px;
-        margin: 28px 0 38px;
-        padding: 24px 30px;
-        font-size: 1.15rem;
-        color: #ffffff;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-      }
-
-      .editorial-workspace table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        margin: 32px 0 44px;
-        border-radius: 16px;
-        overflow: hidden;
-        border: 1px solid var(--z-border);
-        background: rgba(10, 12, 11, 0.7);
-      }
-
-      .editorial-workspace th, .editorial-workspace td {
-        padding: 18px 24px;
-        text-align: left;
-        vertical-align: top;
-      }
-
-      .editorial-workspace th {
-        background: rgba(255, 255, 255, 0.04);
-        color: var(--z-lime);
-        font-family: 'JetBrains Mono', monospace;
-        font-weight: 700;
-        font-size: 0.82rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        border-bottom: 1px solid var(--z-border);
-      }
-
-      .editorial-workspace td {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-        font-size: 0.96rem;
-      }
-
-      .editorial-workspace tr:last-child td { border-bottom: none; }
-      .editorial-workspace tr:hover td { background: rgba(34, 229, 118, 0.03); }
-
-      .editorial-workspace a {
-        color: var(--z-coral);
-        font-weight: 700;
-        text-decoration: none;
-        transition: color 0.2s ease;
-      }
-      .editorial-workspace a:hover {
-        color: #ff607f;
-        text-decoration: underline;
-      }
-
-      .comparison-matrix {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
-        margin: 32px 0 44px;
-      }
-
-      .matrix-card {
-        background: rgba(18, 22, 20, 0.7);
-        border: 1px solid var(--z-border);
-        border-radius: 16px;
-        padding: 26px;
-        transition: transform 0.25s ease, border-color 0.25s ease;
-      }
-      .matrix-card:hover {
-        border-color: var(--z-border-glow);
-        transform: translateY(-4px);
-      }
-
-      .matrix-title {
-        font-family: 'Syne', sans-serif;
-        font-size: 1.35rem;
-        font-weight: 800;
-        color: #ffffff;
-        margin-bottom: 6px;
-      }
-
-      .matrix-tagline {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.82rem;
-        color: var(--z-muted);
-        margin-bottom: 20px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid var(--z-border);
-      }
-
-      .matrix-section-title {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.78rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        margin: 16px 0 10px;
-      }
-      .matrix-section-title.pros { color: var(--z-lime); }
-      .matrix-section-title.cons { color: var(--z-coral); }
-
-      .matrix-list {
-        list-style: none !important;
-        padding-left: 0 !important;
-        margin-bottom: 16px !important;
-      }
-
-      .matrix-list li {
-        position: relative;
-        padding-left: 24px;
-        margin-bottom: 10px;
-        font-size: 0.94rem;
-        color: var(--z-text);
-      }
-
-      .matrix-list.pros li::before {
-        content: "✓";
-        position: absolute;
-        left: 0;
-        color: var(--z-lime);
-        font-weight: 800;
-      }
-
-      .matrix-list.cons li::before {
-        content: "✕";
-        position: absolute;
-        left: 0;
-        color: var(--z-coral);
-        font-weight: 800;
-      }
-
-      /* Related comparisons hover transition */
-      .related-card {
-        display: block;
-        padding: 1.1rem;
-        border-radius: 12px;
-        background: var(--z-card);
-        border: 1px solid var(--z-border);
-        text-decoration: none;
-        transition: all 0.2s ease;
-      }
-      .related-card:hover {
-        border-color: var(--z-lime);
-        transform: translateY(-3px);
-        box-shadow: 0 8px 24px rgba(34, 229, 118, 0.15);
-      }
-
-      @media (max-width: 850px) {
-        .comparison-matrix { grid-template-columns: 1fr; }
-        .viewport-wrapper { width: 92%; }
-        .editorial-workspace { padding: 24px 18px; }
-      }
-    </style>
-  </head>
-  <body>
-    <canvas id="zajno-motion-canvas"></canvas>
-
-    <div class="viewport-wrapper">
-      <div class="hud-topbar">
-        <div class="hud-live">
-          <span class="hud-dot"></span>
-          StackVersus // Kinetic System 2.0
-        </div>
-        <div>Engine: StackVersus Matrix</div>
-        <div>State: 60 FPS Accelerated</div>
+    <header class="comparison-hero motion-fade-up">
+      <div class="hero-tools">
+        <a href={`/tools/${toolSlug(toolA)}/`} class="tool-pill primary">{toolA}</a>
+        <span class="vs-badge">VS</span>
+        <a href={`/tools/${toolSlug(toolB)}/`} class="tool-pill accent">{toolB}</a>
       </div>
+      <h1>{entry.data.title}</h1>
+      {
+        verdict && (
+          <div class="verdict-banner" role="note">
+            <span class="verdict-label">Verdict</span>
+            <span class="verdict-text">{verdict}</span>
+          </div>
+        )
+      }
+      <p class="hero-description">{entry.data.description}</p>
+      {
+        entry.data.source === 'catalog' && (
+          <p class="catalog-note" role="note">
+            Built from the StackVersus tool catalog: structured pricing models, licensing, hosting and editor-curated
+            pros and cons. Last reviewed {formattedDate}. Spotted something out of date?{' '}
+            <a href={`/contact/?page=${encodeURIComponent(pageUrl)}`}>Send a correction</a>.
+          </p>
+        )
+      }
+      <div class="meta-bar">
+        <span class="meta-pill">Updated {formattedDate}</span>
+        <span class="meta-pill">{readingTime} min read</span>
+        <span class="meta-pill">{wordCount.toLocaleString()} words</span>
+        <span class="meta-pill difficulty">{difficulty}</span>
+        <span class="meta-pill popularity">Popularity {popularity}/100</span>
+      </div>
+    </header>
 
-      <nav class="subnav">
-        <a href="/" class="back-btn">
-          <span>←</span>
-          <span>Back to All Comparisons</span>
-        </a>
-        <div class="spec-tag">
-          // HEAD-TO-HEAD MATRIX: {toolA} VS {toolB}
-        </div>
-      </nav>
-
-      <main class="editorial-workspace" id="markdown-content">
-        <Content />
-
-        {relatedComparisons.length > 0 && (
-          <section style="margin-top: 4rem; padding-top: 2.5rem; border-top: 1px solid var(--z-border);">
-            <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--z-text); margin-bottom: 1.25rem; font-family: 'Syne', sans-serif;">
-              Related {currentCategory} Comparisons
-            </h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
-              {relatedComparisons.map((item) => {
-                const itemSlug = item.data.slug || item.id.replace(/\.md$/, '');
-                const rParts = itemSlug.split('-vs-');
-                const targetA = item.data.tool_a || (rParts[0] ? formatToolName(rParts[0]) : 'Tool A');
-                const targetB = item.data.tool_b || (rParts[1] ? formatToolName(rParts[1]) : 'Tool B');
-                return (
-                  <a href={`/comparisons/${itemSlug}`} class="related-card">
-                    <span style="font-weight: 700; color: #ffffff; display: block; font-size: 1rem; margin-bottom: 0.35rem;">
-                      {targetA} vs {targetB}
-                    </span>
-                    <span style="font-size: 0.8rem; color: var(--z-lime); font-family: 'JetBrains Mono', monospace; display: block;">
-                      Read Deep-Dive →
-                    </span>
-                  </a>
-                );
-              })}
+    {
+      hasMetrics && (
+        <section class="metrics-panel motion-fade-up" aria-label="Scorecard">
+          <h2 class="sr-only">Comparison Scorecard</h2>
+          <div class="metric">
+            <span class="metric-label">Performance</span>
+            <div class="metric-track">
+              <div class="metric-fill" style={`width: ${metrics.performance}%`} />
             </div>
-          </section>
-        )}
-      </main>
+            <span class="metric-value">{metrics.performance}</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Ecosystem</span>
+            <div class="metric-track">
+              <div class="metric-fill" style={`width: ${metrics.ecosystem}%`} />
+            </div>
+            <span class="metric-value">{metrics.ecosystem}</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Learning Curve</span>
+            <div class="metric-track">
+              <div class="metric-fill" style={`width: ${metrics.learning_curve}%`} />
+            </div>
+            <span class="metric-value">{metrics.learning_curve}</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Community</span>
+            <div class="metric-track">
+              <div class="metric-fill" style={`width: ${metrics.community}%`} />
+            </div>
+            <span class="metric-value">{metrics.community}</span>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      useCases.length > 0 && (
+        <section class="use-cases motion-fade-up" aria-label="Best use cases">
+          {useCases.map((use) => (
+            <span class="use-case-chip">{use}</span>
+          ))}
+        </section>
+      )
+    }
+
+    <div class="tabs motion-fade-up" role="tablist" aria-label="Comparison sections">
+      <button class="tab active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
+      <button class="tab" data-tab="specs" role="tab" aria-selected="false">Specs</button>
+      <button class="tab" data-tab="faq" role="tab" aria-selected="false">FAQ</button>
+      <button class="tab" data-tab="community" role="tab" aria-selected="false">Community</button>
     </div>
 
-    <!-- Client-Side Transformer: Matrix Layout + Kinetic Ribbon Engine -->
-    <script>
-      const canvas = document.getElementById('zajno-motion-canvas') as HTMLCanvasElement;
-      const ctx = canvas.getContext('2d')!;
+    <main class="editorial-workspace" id="main-content">
+      <section class="tab-panel active" data-panel="overview" role="tabpanel">
+        {
+          tocHeadings.length > 0 && (
+            <nav class="toc" aria-label="Table of contents">
+              <h2 class="toc-title">On this page</h2>
+              <ol class="toc-list">
+                {tocHeadings.map((h) => (
+                  <li>
+                    <a href={`#${h.slug}`}>{h.title}</a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )
+        }
+        <div class="article-content">
+          <Content />
+        </div>
+      </section>
 
-      function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-      }
-      resize();
-      window.addEventListener('resize', resize);
+      <section class="tab-panel" data-panel="specs" role="tabpanel">
+        <h2 class="panel-title">Specification Matrix</h2>
+        <div class="comparison-matrix" id="comparison-matrix">
+          <p class="panel-hint">The matrix is generated from the pros/cons in the article.</p>
+        </div>
+        {
+          entry.data.pricing && (
+            <div class="pricing-card">
+              <h3>Pricing Snapshot</h3>
+              <dl>
+                {entry.data.pricing.model && (
+                  <div class="pricing-row">
+                    <dt>Model</dt>
+                    <dd>{entry.data.pricing.model}</dd>
+                  </div>
+                )}
+                {entry.data.pricing.starting_price && (
+                  <div class="pricing-row">
+                    <dt>Starts at</dt>
+                    <dd>{entry.data.pricing.starting_price}</dd>
+                  </div>
+                )}
+                <div class="pricing-row">
+                  <dt>Free tier</dt>
+                  <dd>{entry.data.pricing.free_tier ? 'Yes' : 'No / N/A'}</dd>
+                </div>
+              </dl>
+            </div>
+          )
+        }
+      </section>
 
-      let mouseX = window.innerWidth / 2;
-      let mouseY = window.innerHeight / 2;
-      window.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-      });
+      <section class="tab-panel" data-panel="faq" role="tabpanel">
+        <h2 class="panel-title">Frequently Asked Questions</h2>
+        {
+          faqs.length > 0 ? (
+            <div class="faq-list">
+              {faqs.map((f) => (
+                <details class="faq-item">
+                  <summary>{f.question}</summary>
+                  <p>{f.answer}</p>
+                </details>
+              ))}
+            </div>
+          ) : (
+            <p class="panel-hint">No FAQ extracted for this comparison.</p>
+          )
+        }
+      </section>
 
-      let time = 0;
-      function renderRibbon() {
-        ctx.fillStyle = '#060707';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        time += 0.016;
-
-        const normY = mouseY / canvas.height;
-
-        const ribbons = [
-          { color: '#22E576', alpha: 0.35, width: 2.5, speed: 1.0, freq: 0.002, amp: 90 },
-          { color: '#FF385C', alpha: 0.28, width: 2.0, speed: 1.3, freq: 0.0025, amp: 120 },
-        ];
-
-        ribbons.forEach((ribbon, i) => {
-          ctx.beginPath();
-          ctx.strokeStyle = ribbon.color;
-          ctx.lineWidth = ribbon.width;
-          ctx.globalAlpha = ribbon.alpha;
-
-          for (let x = 0; x < canvas.width; x += 8) {
-            const dynamicAmp = ribbon.amp * (0.8 + normY * 0.6);
-            const y = (canvas.height * 0.5) + 
-                      Math.sin(x * ribbon.freq + time * ribbon.speed + i) * dynamicAmp * Math.cos(time * 0.4 + i);
-
-            if (x === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
+      <section class="tab-panel" data-panel="community" role="tabpanel">
+        <div class="community-grid">
+          <div>
+            <h2 class="panel-title">Share & Discuss</h2>
+            <ShareButtons title={entry.data.title} url={pageUrl} />
+          </div>
+          {
+            relatedComparisons.length > 0 && (
+              <div>
+                <h2 class="panel-title">Related in {currentCategory}</h2>
+                <div class="related-list">
+                  {relatedComparisons.map((item) => {
+                    const itemSlug = item.data.slug || item.id.replace(/\.md$/, '');
+                    return (
+                      <a href={`/comparisons/${itemSlug}/`} class="related-card">
+                        {item.data.title}
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )
           }
-          ctx.stroke();
+        </div>
+        <Comments pageId={currentSlug} />
+      </section>
+    </main>
+
+    <p class="affiliate-disclosure" role="note">
+      <strong>Disclosure:</strong> Outbound links go to official product sites. If we have an affiliate partnership, the link
+      will be marked as such. Read the{' '}
+      <a href="/about#disclosure">full disclosure</a>.
+    </p>
+
+    <Footer />
+  </div>
+
+  <script>
+    const tabButtons = document.querySelectorAll<HTMLButtonElement>('.tab');
+    const tabPanels = document.querySelectorAll<HTMLElement>('.tab-panel');
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        tabButtons.forEach((b) => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
         });
+        tabPanels.forEach((p) => p.classList.remove('active'));
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        const key = btn.getAttribute('data-tab');
+        document.querySelector<HTMLElement>(`[data-panel="${key}"]`)?.classList.add('active');
+      });
+    });
 
-        requestAnimationFrame(renderRibbon);
-      }
-      renderRibbon();
-
-      // Tabular Pros & Cons Transformer
-      const contentRoot = document.getElementById('markdown-content');
-      if (contentRoot) {
-        const h1 = contentRoot.querySelector('h1');
-        if (h1 && !h1.querySelector('.kinetic-accent')) {
-          const text = h1.textContent || '';
-          if (text.includes(':')) {
-            const [first, rest] = text.split(':');
-            h1.innerHTML = `${first}: <span class="kinetic-accent">${rest}</span>`;
-          }
-        }
-
-        const h3s = Array.from(contentRoot.querySelectorAll('h3'));
-        if (h3s.length >= 2) {
-          const matrixContainer = document.createElement('div');
-          matrixContainer.className = 'comparison-matrix';
-
-          h3s.slice(0, 2).forEach(h3 => {
-            const card = document.createElement('div');
-            card.className = 'matrix-card';
-
-            const title = document.createElement('div');
-            title.className = 'matrix-title';
-            title.textContent = h3.textContent;
-            card.appendChild(title);
-
-            let next = h3.nextElementSibling;
-            while (next && next.tagName !== 'H3' && next.tagName !== 'H2') {
-              const current = next;
-              next = current.nextElementSibling;
-
-              if (current.tagName === 'P' && current.querySelector('em')) {
-                current.className = 'matrix-tagline';
-                card.appendChild(current);
-              } else if (current.tagName === 'P' && current.textContent?.includes('Pros:')) {
-                const prosTitle = document.createElement('div');
-                prosTitle.className = 'matrix-section-title pros';
-                prosTitle.textContent = 'Pros';
-                card.appendChild(prosTitle);
-                current.remove();
-              } else if (current.tagName === 'P' && current.textContent?.includes('Cons:')) {
-                const consTitle = document.createElement('div');
-                consTitle.className = 'matrix-section-title cons';
-                consTitle.textContent = 'Cons';
-                card.appendChild(consTitle);
-                current.remove();
-              } else if (current.tagName === 'UL') {
-                const prev = card.lastElementChild;
-                if (prev?.classList.contains('cons')) {
-                  current.className = 'matrix-list cons';
-                } else {
-                  current.className = 'matrix-list pros';
-                }
-                card.appendChild(current);
-              }
+    // Build comparison matrix from H3 pros/cons blocks inside the rendered article
+    const contentRoot = document.querySelector('.article-content');
+    const matrixContainer = document.getElementById('comparison-matrix');
+    if (contentRoot && matrixContainer) {
+      const h3s = Array.from(contentRoot.querySelectorAll('h3'));
+      if (h3s.length >= 2) {
+        const matrix = document.createElement('div');
+        matrix.className = 'matrix-grid';
+        h3s.slice(0, 2).forEach((h3) => {
+          const card = document.createElement('div');
+          card.className = 'matrix-card';
+          const title = document.createElement('div');
+          title.className = 'matrix-title';
+          title.textContent = h3.textContent;
+          card.appendChild(title);
+          let next = h3.nextElementSibling;
+          while (next && next.tagName !== 'H3' && next.tagName !== 'H2') {
+            const current = next;
+            next = current.nextElementSibling;
+            if (current.tagName === 'P' && current.querySelector('em')) {
+              current.className = 'matrix-tagline';
+              card.appendChild(current);
+            } else if (current.tagName === 'P' && current.textContent?.includes('Pros:')) {
+              const t = document.createElement('div');
+              t.className = 'matrix-section-title pros';
+              t.textContent = 'Pros';
+              card.appendChild(t);
+              current.remove();
+            } else if (current.tagName === 'P' && current.textContent?.includes('Cons:')) {
+              const t = document.createElement('div');
+              t.className = 'matrix-section-title cons';
+              t.textContent = 'Cons';
+              card.appendChild(t);
+              current.remove();
+            } else if (current.tagName === 'UL') {
+              const prev = card.lastElementChild;
+              current.className = `matrix-list ${prev?.classList.contains('cons') ? 'cons' : 'pros'}`;
+              card.appendChild(current);
             }
-
-            h3.remove();
-            matrixContainer.appendChild(card);
-          });
-
-          const detailedH2 = Array.from(contentRoot.querySelectorAll('h2')).find(h => h.textContent?.includes('Detailed Breakdown'));
-          if (detailedH2) {
-            detailedH2.insertAdjacentElement('afterend', matrixContainer);
-          } else {
-            contentRoot.appendChild(matrixContainer);
           }
-        }
+          h3.remove();
+          matrix.appendChild(card);
+        });
+        matrixContainer.innerHTML = '';
+        matrixContainer.appendChild(matrix);
       }
-    </script>
-  </body>
-</html>
+    }
+
+    // Page feedback widget
+    const feedbackKey = `feedback-${window.location.pathname}`;
+    const feedbackThanks = document.getElementById('feedback-thanks');
+    const feedbackButtons = document.querySelectorAll<HTMLButtonElement>('.feedback-btn');
+    const existingFeedback = localStorage.getItem(feedbackKey);
+    if (existingFeedback && feedbackThanks) {
+      feedbackThanks.style.display = 'block';
+      feedbackButtons.forEach((b) => (b.disabled = true));
+    }
+    feedbackButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        localStorage.setItem(feedbackKey, button.getAttribute('data-value') || '');
+        feedbackButtons.forEach((b) => (b.disabled = true));
+        if (feedbackThanks) feedbackThanks.style.display = 'block';
+      });
+    });
+  </script>
+
+  <style is:global>
+    .comparison-hero {
+      margin: 28px 0 32px;
+      padding: clamp(32px, 5vw, 56px);
+      background: var(--z-surface);
+      border: 1px solid var(--z-border);
+      border-radius: 24px;
+      box-shadow: 0 24px 60px rgba(5, 3, 12, 0.08);
+    }
+
+    .hero-tools {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .tool-pill {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 10px 18px;
+      border-radius: 999px;
+      text-decoration: none;
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+    .tool-pill:hover,
+    .tool-pill:focus-visible {
+      transform: translateY(-2px);
+      outline: none;
+    }
+    .tool-pill.primary {
+      background: var(--z-primary);
+      color: #ffffff;
+      box-shadow: 0 0 20px var(--z-primary-glow);
+    }
+    .tool-pill.accent {
+      background: var(--z-accent);
+      color: #ffffff;
+    }
+
+    .vs-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--z-muted);
+    }
+
+    .comparison-hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--z-text);
+      margin-bottom: 16px;
+    }
+
+    .verdict-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(106, 75, 205, 0.08), rgba(214, 107, 178, 0.08));
+      border: 1px solid rgba(106, 75, 205, 0.2);
+      margin-bottom: 18px;
+    }
+    .verdict-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--z-primary);
+    }
+    .verdict-text {
+      font-weight: 600;
+      color: var(--z-text);
+      font-size: 0.95rem;
+    }
+
+    .hero-description {
+      color: var(--z-muted);
+      font-size: 1.05rem;
+      max-width: 720px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .catalog-note {
+      font-size: 0.82rem;
+      color: var(--z-muted);
+      line-height: 1.55;
+      max-width: 720px;
+      margin: -6px 0 20px;
+      padding: 10px 14px;
+      border-left: 3px solid var(--z-primary);
+      background: rgba(106, 75, 205, 0.05);
+      border-radius: 0 10px 10px 0;
+    }
+    .catalog-note a {
+      color: var(--z-primary);
+      font-weight: 600;
+    }
+
+    .meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .meta-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--z-muted);
+      background: rgba(5, 3, 12, 0.04);
+      border: 1px solid var(--z-border);
+      border-radius: 999px;
+      padding: 5px 12px;
+    }
+    .meta-pill.difficulty {
+      color: var(--z-accent);
+      background: rgba(214, 107, 178, 0.08);
+    }
+    .meta-pill.popularity {
+      color: var(--z-primary);
+      background: rgba(106, 75, 205, 0.08);
+    }
+
+    .metrics-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
+      padding: 24px;
+      background: var(--z-surface);
+      border: 1px solid var(--z-border);
+      border-radius: 18px;
+    }
+    .metric {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .metric-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      color: var(--z-muted);
+    }
+    .metric-track {
+      height: 8px;
+      background: var(--z-border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .metric-fill {
+      height: 100%;
+      background: var(--z-gradient);
+      border-radius: 999px;
+      transition: width 1s ease;
+    }
+    .metric-value {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--z-text);
+    }
+
+    .use-cases {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .use-case-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--z-primary);
+      background: rgba(106, 75, 205, 0.08);
+      border: 1px solid rgba(106, 75, 205, 0.2);
+      border-radius: 999px;
+      padding: 6px 14px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 0;
+      padding: 6px;
+      background: var(--z-surface);
+      border: 1px solid var(--z-border);
+      border-bottom: none;
+      border-radius: 18px 18px 0 0;
+      width: fit-content;
+    }
+    .tab {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 8px 18px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--z-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab:hover,
+    .tab:focus-visible {
+      color: var(--z-text);
+      background: rgba(5, 3, 12, 0.04);
+      outline: none;
+    }
+    .tab.active {
+      background: #ffffff;
+      color: var(--z-primary);
+      border-color: var(--z-border);
+      box-shadow: 0 4px 12px rgba(5, 3, 12, 0.05);
+    }
+
+    .editorial-workspace {
+      background: var(--z-surface);
+      border: 1px solid var(--z-border);
+      border-radius: 0 24px 24px 24px;
+      padding: clamp(32px, 4vw, 64px);
+      backdrop-filter: blur(24px);
+      box-shadow: 0 25px 60px rgba(5, 3, 12, 0.08);
+    }
+
+    .tab-panel {
+      display: none;
+      animation: fade-in 0.3s ease;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+
+    .panel-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--z-text);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+    .panel-hint {
+      color: var(--z-muted);
+      font-size: 0.92rem;
+    }
+
+    .toc {
+      background: rgba(5, 3, 12, 0.03);
+      border: 1px solid var(--z-border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+    }
+    .toc-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--z-text);
+      margin: 0 0 14px;
+      text-transform: uppercase;
+    }
+    .toc-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .toc-list a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--z-muted);
+      text-decoration: none;
+      padding: 5px 12px;
+      border: 1px solid var(--z-border);
+      border-radius: 999px;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+    .toc-list a:hover,
+    .toc-list a:focus-visible {
+      color: #ffffff;
+      background: var(--z-primary);
+      border-color: var(--z-primary);
+      outline: none;
+    }
+
+    .article-content h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      color: var(--z-text);
+      margin: 44px 0 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--z-border);
+    }
+    .article-content h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--z-primary);
+      margin: 32px 0 12px;
+    }
+    .article-content p {
+      font-size: 1.04rem;
+      color: var(--z-text);
+      line-height: 1.7;
+      margin-bottom: 18px;
+    }
+    .article-content blockquote {
+      background: linear-gradient(135deg, rgba(106, 75, 205, 0.08), rgba(255, 255, 255, 0.6));
+      border-left: 4px solid var(--z-primary);
+      border-radius: 12px;
+      margin: 28px 0 38px;
+      padding: 24px 30px;
+      font-size: 1.15rem;
+      color: var(--z-text);
+    }
+    .article-content table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 32px 0 44px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--z-border);
+      background: var(--z-surface);
+    }
+    .article-content th,
+    .article-content td {
+      padding: 18px 24px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .article-content th {
+      background: rgba(5, 3, 12, 0.04);
+      color: var(--z-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--z-border);
+    }
+    .article-content td {
+      border-bottom: 1px solid rgba(5, 3, 12, 0.04);
+      font-size: 0.96rem;
+    }
+    .article-content tr:last-child td {
+      border-bottom: none;
+    }
+    .article-content tr:hover td {
+      background: rgba(106, 75, 205, 0.03);
+    }
+    .article-content a {
+      color: var(--z-accent);
+      font-weight: 700;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    .article-content a:hover {
+      color: var(--z-primary);
+    }
+    .article-content ul {
+      padding-left: 22px;
+      margin-bottom: 18px;
+    }
+    .article-content li {
+      margin-bottom: 8px;
+      line-height: 1.6;
+    }
+
+    .comparison-matrix {
+      margin-bottom: 28px;
+    }
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .matrix-card {
+      background: rgba(5, 3, 12, 0.03);
+      border: 1px solid var(--z-border);
+      border-radius: 16px;
+      padding: 22px;
+      transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
+    }
+    .matrix-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--z-border-glow);
+    }
+    .matrix-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--z-text);
+      margin-bottom: 4px;
+    }
+    .matrix-tagline {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem !important;
+      color: var(--z-muted) !important;
+      margin-bottom: 18px !important;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--z-border);
+    }
+    .matrix-section-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 16px 0 10px;
+    }
+    .matrix-section-title.pros {
+      color: #2f9e5e;
+    }
+    .matrix-section-title.cons {
+      color: var(--z-accent);
+    }
+    .matrix-list {
+      list-style: none !important;
+      padding-left: 0 !important;
+      margin-bottom: 16px !important;
+    }
+    .matrix-list li {
+      position: relative;
+      padding-left: 22px;
+      margin-bottom: 8px;
+      font-size: 0.92rem;
+      color: var(--z-text);
+    }
+    .matrix-list.pros li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: #2f9e5e;
+      font-weight: 800;
+    }
+    .matrix-list.cons li::before {
+      content: '✕';
+      position: absolute;
+      left: 0;
+      color: var(--z-accent);
+      font-weight: 800;
+    }
+
+    .pricing-card {
+      background: rgba(106, 75, 205, 0.05);
+      border: 1px solid rgba(106, 75, 205, 0.15);
+      border-radius: 16px;
+      padding: 22px;
+    }
+    .pricing-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: var(--z-text);
+    }
+    .pricing-card dl {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .pricing-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.95rem;
+    }
+    .pricing-row dt {
+      color: var(--z-muted);
+    }
+    .pricing-row dd {
+      font-weight: 700;
+      color: var(--z-text);
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .faq-item {
+      background: rgba(5, 3, 12, 0.03);
+      border: 1px solid var(--z-border);
+      border-radius: 14px;
+      padding: 16px 20px;
+    }
+    .faq-item summary {
+      font-weight: 700;
+      color: var(--z-text);
+      cursor: pointer;
+      list-style: none;
+    }
+    .faq-item p {
+      color: var(--z-muted);
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+
+    .community-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    .related-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .related-card {
+      display: block;
+      padding: 14px 16px;
+      background: rgba(5, 3, 12, 0.03);
+      border: 1px solid var(--z-border);
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--z-text);
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .related-card:hover,
+    .related-card:focus-visible {
+      background: rgba(106, 75, 205, 0.08);
+      border-color: var(--z-border-glow);
+      outline: none;
+    }
+
+    .affiliate-disclosure {
+      font-size: 0.82rem;
+      color: var(--z-muted);
+      background: rgba(5, 3, 12, 0.03);
+      border: 1px solid var(--z-border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 32px 0;
+      line-height: 1.55;
+    }
+    .affiliate-disclosure a {
+      color: var(--z-primary);
+      font-weight: 600;
+    }
+
+    .subnav {
+      margin: 28px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .category-chip {
+      display: inline-flex;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--z-primary);
+      background: rgba(106, 75, 205, 0.1);
+      border: 1px solid rgba(106, 75, 205, 0.25);
+      border-radius: 6px;
+      padding: 5px 12px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .category-chip:hover,
+    .category-chip:focus-visible {
+      background: var(--z-primary);
+      color: #ffffff;
+      box-shadow: 0 0 10px var(--z-primary-glow);
+      outline: none;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 850px) {
+      .matrix-grid,
+      .community-grid {
+        grid-template-columns: 1fr;
+      }
+      .editorial-workspace {
+        padding: 24px 18px;
+        border-radius: 0 0 18px 18px;
+      }
+      .tabs {
+        width: 100%;
+        border-radius: 18px 18px 0 0;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+      }
+    }
+  </style>
+</BaseLayout>

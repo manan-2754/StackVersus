@@ -1,0 +1,173 @@
+---
+const navLinks = [
+  { label: 'Explore', href: '/' },
+  { label: 'Trending', href: '/trending/' },
+  { label: 'Categories', href: '/categories/' },
+  { label: 'Tools', href: '/tools/' },
+  { label: 'Compare', href: '/compare/' },
+  { label: 'About', href: '/about/' },
+];
+---
+
+<header class="site-header" role="banner">
+  <div class="header-inner">
+    <a href="/" class="brand" aria-label="StackVersus Home">
+      <span class="brand-mark">SV</span>
+      <span class="brand-name">StackVersus</span>
+    </a>
+    <nav class="main-nav" aria-label="Main navigation">
+      {
+        navLinks.map((link) => (
+          <a href={link.href} class="nav-link">
+            {link.label}
+          </a>
+        ))
+      }
+      <button type="button" class="cmd-trigger" id="cmd-trigger" aria-label="Open command palette">
+        <span>⌕</span>
+        <kbd>Ctrl K</kbd>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: relative;
+    z-index: 2;
+    width: 95%;
+    max-width: 1720px;
+    margin: 0 auto;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--z-border);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--z-text);
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+  }
+
+  .brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    background: var(--z-gradient);
+    background-size: 200% 200%;
+    animation: gradient-shift 4s ease infinite;
+    color: #ffffff;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .main-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .nav-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--z-muted);
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+  }
+
+  .nav-link:hover,
+  .nav-link:focus-visible {
+    color: var(--z-text);
+    background: var(--z-surface);
+    border-color: var(--z-border);
+    outline: none;
+    transform: translateY(-2px);
+  }
+
+  .cmd-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--z-muted);
+    background: var(--z-surface);
+    border: 1px solid var(--z-border);
+    border-radius: 999px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .cmd-trigger:hover,
+  .cmd-trigger:focus-visible {
+    border-color: var(--z-primary);
+    color: var(--z-text);
+    outline: none;
+  }
+  .cmd-trigger kbd {
+    font-size: 0.65rem;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: rgba(106, 75, 205, 0.1);
+    color: var(--z-primary);
+  }
+
+  @media (max-width: 900px) {
+    .cmd-trigger kbd {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .brand-name {
+      display: none;
+    }
+    .main-nav {
+      gap: 2px;
+    }
+    .nav-link {
+      padding: 6px 10px;
+      font-size: 0.72rem;
+    }
+    .cmd-trigger span {
+      font-size: 0.9rem;
+    }
+  }
+</style>
+
+<script>
+  const trigger = document.getElementById('cmd-trigger');
+  if (trigger) {
+    trigger.addEventListener('click', () => {
+      const palette = document.getElementById('command-palette') as HTMLDivElement | null;
+      if (palette) {
+        palette.hidden = false;
+        const input = document.getElementById('cmd-input') as HTMLInputElement | null;
+        input?.focus();
+      }
+    });
+  }
+</script>

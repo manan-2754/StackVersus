@@ -1,0 +1,4 @@
+Contact: mailto:team@stackversus.pages.dev
+Expires: 2027-01-01T00:00:00.000Z
+Preferred-Languages: en
+Policy: https://stackversus.pages.dev/privacy-policy/

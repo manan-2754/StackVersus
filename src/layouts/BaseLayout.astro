@@ -1,0 +1,656 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Header from '../components/Header.astro';
+import BackToTop from '../components/BackToTop.astro';
+import AuroraBackground from '../components/AuroraBackground.astro';
+import CommandPalette from '../components/CommandPalette.astro';
+
+export interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+  twitterCard?: 'summary' | 'summary_large_image';
+  schema?: Record<string, unknown> | Record<string, unknown>[];
+  robots?: string;
+  lang?: string;
+}
+
+const {
+  title,
+  description,
+  canonical,
+  ogTitle,
+  ogDescription,
+  ogImage = 'https://stackversus.pages.dev/og-preview.png',
+  ogType = 'website',
+  twitterCard = 'summary_large_image',
+  schema,
+  robots = 'index, follow',
+  lang = 'en',
+} = Astro.props;
+
+const siteUrl = 'https://stackversus.pages.dev';
+
+/** Cloudflare Pages serves directory-style URLs with a trailing slash; canonicals must match the sitemap exactly. */
+function withTrailingSlash(url: string) {
+  const { pathname } = new URL(url);
+  return pathname.endsWith('/') || /\.[a-z0-9]+$/i.test(pathname) ? url : `${url}/`;
+}
+
+const pageCanonical = withTrailingSlash(canonical || `${siteUrl}${Astro.url.pathname}`);
+const googleVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION;
+const pageOgTitle = ogTitle || title;
+const pageOgDescription = ogDescription || description;
+
+const schemaScripts = schema ? (Array.isArray(schema) ? schema : [schema]).map((s) => JSON.stringify(s)) : [];
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content={robots} />
+    <meta name="theme-color" content="#f7f5fc" />
+    <link rel="manifest" href="/manifest.json" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="StackVersus Comparisons"
+      href="https://stackversus.pages.dev/rss.xml"
+    />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={pageCanonical} />
+    {googleVerification && <meta name="google-site-verification" content={googleVerification} />}
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <meta property="og:title" content={pageOgTitle} />
+    <meta property="og:description" content={pageOgDescription} />
+    <meta property="og:url" content={pageCanonical} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:secure_url" content={ogImage} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={pageOgTitle} />
+
+    <meta name="twitter:card" content={twitterCard} />
+    <meta name="twitter:title" content={pageOgTitle} />
+    <meta name="twitter:description" content={pageOgDescription} />
+    <meta name="twitter:image" content={ogImage} />
+
+    {schemaScripts.map((script) => <script type="application/ld+json" set:html={script} />)}
+
+    <ClientRouter />
+
+    {
+      import.meta.env.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN && (
+        <script
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={`{\"token\": \"${import.meta.env.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN}\"}`}
+        />
+      )
+    }
+
+    <style is:global media="print">
+      canvas#zajno-motion-canvas,
+      .site-header,
+      .back-to-top,
+      .subnav,
+      .share-bar,
+      .feedback-widget,
+      .site-footer,
+      .hud-bar,
+      .card-footer,
+      .action-pill,
+      .search-box,
+      .filter-bar {
+        display: none !important;
+      }
+
+      body {
+        background: #f7f5fc !important;
+        color: #05030c !important;
+      }
+
+      .editorial-workspace,
+      .glass-panel,
+      .card {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        color: #05030c !important;
+      }
+
+      a {
+        color: #05030c !important;
+      }
+
+      a::after {
+        content: ' (' attr(href) ')';
+        font-size: 0.75rem;
+        opacity: 0.7;
+      }
+
+      h1,
+      h2,
+      h3 {
+        color: #05030c !important;
+      }
+
+      .comparison-matrix {
+        page-break-inside: avoid;
+      }
+    </style>
+
+    <style is:global>
+      :root {
+        --z-background: #f7f5fc;
+        --z-surface: rgba(255, 255, 255, 0.78);
+        --z-surface-hover: rgba(255, 255, 255, 0.95);
+        --z-border: rgba(5, 3, 12, 0.08);
+        --z-border-glow: rgba(106, 75, 205, 0.35);
+        --z-primary: #6a4bcd;
+        --z-primary-glow: rgba(106, 75, 205, 0.28);
+        --z-secondary: #de8ad4;
+        --z-accent: #d66bb2;
+        --z-text: #05030c;
+        --z-muted: #5e5a6b;
+        --z-gradient: linear-gradient(135deg, #6a4bcd, #d66bb2, #de8ad4);
+        --z-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+        /* legacy aliases so components don't all need renaming */
+        --z-black: var(--z-background);
+        --z-card: var(--z-surface);
+        --z-card-hover: var(--z-surface-hover);
+        --z-lime: var(--z-primary);
+        --z-lime-glow: var(--z-primary-glow);
+        --z-coral: var(--z-accent);
+        --z-gold: var(--z-secondary);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--z-background);
+        color: var(--z-text);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      a,
+      a:hover,
+      a:focus,
+      a:visited,
+      u,
+      ins,
+      abbr[title] {
+        text-decoration: none !important;
+      }
+
+      /* Motion primitives */
+      @keyframes fade-up {
+        from {
+          opacity: 0;
+          transform: translateY(24px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes gradient-shift {
+        0%,
+        100% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-6px);
+        }
+      }
+
+      .motion-fade-up {
+        animation: fade-up 0.6s var(--z-ease-out) both;
+      }
+
+      .motion-fade-in {
+        animation: fade-in 0.5s ease both;
+      }
+
+      @keyframes scale-in {
+        from {
+          opacity: 0;
+          transform: scale(0.96);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .motion-scale-in {
+        animation: scale-in 0.45s var(--z-ease-out) both;
+      }
+
+      .motion-float {
+        animation: float 4s ease-in-out infinite;
+      }
+
+      .motion-gradient {
+        background-size: 200% 200%;
+        animation: gradient-shift 6s ease infinite;
+      }
+
+      /* 3D stack cards with animated gradient outline */
+      .stack-3d {
+        --rx: 0deg;
+        --ry: 0deg;
+        --lift: 0px;
+        --mx: 50%;
+        --my: 50%;
+        position: relative;
+        isolation: isolate;
+        transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translate3d(0, var(--lift), 0);
+        transform-style: preserve-3d;
+        transition:
+          transform 0.35s var(--z-ease-out),
+          box-shadow 0.35s ease,
+          background 0.25s ease;
+        will-change: transform;
+      }
+
+      .stack-3d::after {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        border-radius: inherit;
+        padding: 1.5px;
+        background: linear-gradient(120deg, var(--z-primary), var(--z-accent), var(--z-secondary), var(--z-primary));
+        background-size: 300% 300%;
+        -webkit-mask:
+          linear-gradient(#000 0 0) content-box,
+          linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0.45;
+        pointer-events: none;
+        animation: gradient-shift 6s ease infinite;
+        transition:
+          opacity 0.3s ease,
+          padding 0.3s ease;
+        z-index: 2;
+      }
+
+      .stack-3d::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: radial-gradient(
+          420px circle at var(--mx) var(--my),
+          rgba(106, 75, 205, 0.12),
+          rgba(214, 107, 178, 0.06) 35%,
+          transparent 60%
+        );
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        z-index: 0;
+      }
+
+      .stack-3d:hover,
+      .stack-3d:focus-visible {
+        --lift: -6px;
+        outline: none;
+        box-shadow:
+          0 30px 60px -24px rgba(106, 75, 205, 0.45),
+          0 18px 36px -20px rgba(214, 107, 178, 0.45);
+      }
+
+      .stack-3d:hover::after,
+      .stack-3d:focus-visible::after {
+        opacity: 1;
+        padding: 2px;
+        animation-duration: 2.5s;
+      }
+
+      .stack-3d:hover::before,
+      .stack-3d:focus-visible::before {
+        opacity: 1;
+      }
+
+      /* 3D gradient-outlined hover button */
+      .stack-cta {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--z-primary);
+        text-decoration: none;
+        padding: 8px 16px;
+        border-radius: 999px;
+        border: 1.5px solid transparent;
+        background:
+          linear-gradient(#ffffff, #ffffff) padding-box,
+          var(--z-gradient) border-box;
+        box-shadow:
+          0 4px 0 -1px rgba(106, 75, 205, 0.35),
+          0 10px 20px -10px rgba(214, 107, 178, 0.5);
+        transform: translate3d(0, 0, 0);
+        transition:
+          transform 0.25s var(--z-ease-out),
+          box-shadow 0.25s ease,
+          color 0.2s ease,
+          background 0.25s ease;
+      }
+
+      .stack-cta .arrow {
+        display: inline-block;
+        transition: transform 0.25s var(--z-ease-out);
+      }
+
+      .stack-3d:hover .stack-cta,
+      .stack-3d:focus-visible .stack-cta,
+      .stack-cta:hover,
+      .stack-cta:focus-visible {
+        color: #ffffff;
+        background:
+          var(--z-gradient) padding-box,
+          linear-gradient(120deg, #4a32a0, var(--z-accent)) border-box;
+        transform: translate3d(0, -3px, 30px);
+        box-shadow:
+          0 7px 0 -1px rgba(74, 50, 160, 0.55),
+          0 18px 30px -12px rgba(214, 107, 178, 0.7);
+        outline: none;
+      }
+
+      .stack-3d:hover .stack-cta .arrow,
+      .stack-cta:hover .arrow {
+        transform: translateX(4px);
+      }
+
+      .stack-cta:active {
+        transform: translate3d(0, 2px, 0);
+        box-shadow:
+          0 1px 0 -1px rgba(74, 50, 160, 0.55),
+          0 6px 12px -8px rgba(214, 107, 178, 0.6);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+
+      .viewport-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 95%;
+        max-width: 1720px;
+        margin: 0 auto;
+        padding: clamp(16px, 3vw, 28px) 0 60px;
+      }
+
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 0;
+        background: var(--z-primary);
+        color: #ffffff;
+        padding: 8px 16px;
+        z-index: 100;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: top 0.2s ease;
+      }
+      .skip-link:focus {
+        top: 0;
+      }
+
+      /* Top HUD Bar */
+      .hud-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: clamp(14px, 2vw, 24px);
+        border-bottom: 1px solid var(--z-border);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.76rem;
+        color: var(--z-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .hud-live {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--z-lime);
+        white-space: nowrap;
+      }
+
+      .hud-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--z-lime);
+        box-shadow: 0 0 10px var(--z-lime);
+        animation: pulse 1.8s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.4;
+          transform: scale(0.8);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .hud-dot {
+          animation: none;
+        }
+      }
+
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--z-text);
+        text-decoration: none;
+        padding: 8px 20px;
+        border-radius: 999px;
+        background: var(--z-surface);
+        border: 1px solid var(--z-border);
+        backdrop-filter: blur(16px);
+        transition: all 0.25s var(--z-ease-out);
+      }
+      .back-btn:hover,
+      .back-btn:focus-visible {
+        background: var(--z-primary);
+        color: #ffffff;
+        border-color: var(--z-primary);
+        box-shadow: 0 0 18px var(--z-primary-glow);
+        transform: translateX(-4px);
+      }
+
+      /* Site Footer */
+      .site-footer {
+        margin-top: 80px;
+        padding-top: 32px;
+        border-top: 1px solid var(--z-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.78rem;
+        color: var(--z-muted);
+      }
+
+      .site-footer a {
+        color: var(--z-muted);
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+      .site-footer a:hover,
+      .site-footer a:focus-visible {
+        color: var(--z-lime);
+      }
+
+      /* Responsiveness */
+      @media (max-width: 640px) {
+        .hud-telemetry {
+          display: none;
+        }
+        .viewport-wrapper {
+          width: 92%;
+        }
+        .site-footer {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <AuroraBackground />
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <Header />
+    <slot />
+    <BackToTop />
+    <CommandPalette />
+
+    <script>
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let activeStack: HTMLElement | null = null;
+
+      function resetStack(el: HTMLElement) {
+        ['--rx', '--ry', '--mx', '--my'].forEach((p) => el.style.removeProperty(p));
+      }
+
+      document.addEventListener(
+        'pointermove',
+        (e) => {
+          if (reduceMotion.matches || e.pointerType !== 'mouse') return;
+          const el = e.target instanceof Element ? e.target.closest<HTMLElement>('.stack-3d') : null;
+          if (activeStack && activeStack !== el) resetStack(activeStack);
+          activeStack = el;
+          if (!el) return;
+          const rect = el.getBoundingClientRect();
+          const px = (e.clientX - rect.left) / rect.width;
+          const py = (e.clientY - rect.top) / rect.height;
+          el.style.setProperty('--rx', `${((0.5 - py) * 10).toFixed(2)}deg`);
+          el.style.setProperty('--ry', `${((px - 0.5) * 12).toFixed(2)}deg`);
+          el.style.setProperty('--mx', `${(px * 100).toFixed(1)}%`);
+          el.style.setProperty('--my', `${(py * 100).toFixed(1)}%`);
+        },
+        { passive: true }
+      );
+
+      document.addEventListener('mouseout', (e) => {
+        if (!e.relatedTarget && activeStack) {
+          resetStack(activeStack);
+          activeStack = null;
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        const link = (e.target as HTMLElement).closest('a');
+        if (!link || !link.href) return;
+        const url = new URL(link.href, window.location.href);
+        if (url.origin === window.location.origin) return;
+
+        const label = link.getAttribute('data-track') || link.textContent?.trim() || url.hostname;
+        const payload = {
+          event: 'outbound_click',
+          label,
+          href: link.href,
+          path: window.location.pathname,
+        };
+
+        if (typeof window.gtag === 'function') {
+          window.gtag('event', 'click', {
+            event_category: 'outbound',
+            event_label: label,
+            link_url: link.href,
+          });
+        }
+
+        if (typeof window.plausible === 'function') {
+          window.plausible('Outbound Click', { props: { url: link.href, label } });
+        }
+
+        try {
+          navigator.sendBeacon('/api/_noop', JSON.stringify(payload));
+        } catch {
+          // noop: static deployment target may not expose a collector
+        }
+      });
+    </script>
+  </body>
+</html>

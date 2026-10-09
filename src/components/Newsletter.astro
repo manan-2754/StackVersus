@@ -1,0 +1,154 @@
+---
+const action = import.meta.env.PUBLIC_NEWSLETTER_ACTION || '';
+const showForm = Boolean(action);
+---
+
+<aside class="newsletter-panel" aria-label="Newsletter signup">
+  <div class="newsletter-copy">
+    <h2>StackVersus Radar</h2>
+    <p>Get one high-signal tool comparison every week. No spam, no noise.</p>
+  </div>
+  {
+    showForm ? (
+      <form class="newsletter-form" method="post" action={action} target="_blank">
+        <label for="newsletter-email" class="sr-only">
+          Email address
+        </label>
+        <input
+          id="newsletter-email"
+          name="email"
+          type="email"
+          placeholder="you@example.com"
+          required
+          autocomplete="email"
+          class="newsletter-input"
+        />
+        <button type="submit" class="newsletter-submit">
+          Subscribe
+        </button>
+      </form>
+    ) : (
+      <a
+        href="mailto:team@stackversus.pages.dev?subject=Subscribe%20to%20StackVersus%20Radar"
+        class="newsletter-fallback"
+      >
+        Request access via email
+      </a>
+    )
+  }
+</aside>
+
+<style is:global>
+  .newsletter-panel {
+    margin-top: 80px;
+    padding: 42px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(106, 75, 205, 0.08), rgba(214, 107, 178, 0.05));
+    border: 1px solid var(--z-border);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .newsletter-copy h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--z-text);
+    margin-bottom: 8px;
+  }
+
+  .newsletter-copy p {
+    color: var(--z-muted);
+    font-size: 0.95rem;
+    margin: 0;
+  }
+
+  .newsletter-form {
+    display: flex;
+    gap: 10px;
+    flex: 1 1 340px;
+    max-width: 480px;
+  }
+
+  .newsletter-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: var(--z-surface);
+    border: 1px solid var(--z-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--z-text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .newsletter-input::placeholder {
+    color: var(--z-muted);
+  }
+
+  .newsletter-input:focus {
+    border-color: var(--z-lime);
+  }
+
+  .newsletter-submit {
+    background: var(--z-lime);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .newsletter-submit:hover,
+  .newsletter-submit:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(106, 75, 205, 0.25);
+    outline: none;
+  }
+
+  .newsletter-fallback {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--z-lime);
+    text-decoration: none;
+    border: 1px solid var(--z-lime);
+    border-radius: 10px;
+    padding: 12px 20px;
+    transition: all 0.2s ease;
+  }
+
+  .newsletter-fallback:hover,
+  .newsletter-fallback:focus-visible {
+    background: var(--z-lime);
+    color: #ffffff;
+    outline: none;
+  }
+
+  @media (max-width: 640px) {
+    .newsletter-panel {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 28px;
+    }
+
+    .newsletter-form {
+      flex-direction: column;
+      max-width: none;
+    }
+  }
+</style>

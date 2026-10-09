@@ -1,746 +1,879 @@
 ﻿---
+import fs from 'node:fs';
 import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HudBar from '../components/HudBar.astro';
+import Footer from '../components/Footer.astro';
+import RibbonCanvas from '../components/RibbonCanvas.astro';
+import Newsletter from '../components/Newsletter.astro';
 
 const rawComparisons = await getCollection('comparisons');
 
+const comparisonsWithDates = rawComparisons.map((item) => {
+  let mtime = 0;
+  try {
+    mtime = fs.statSync(item.filePath ?? '').mtime.getTime();
+  } catch {
+    mtime = 0;
+  }
+  return { ...item, mtime };
+});
+
+const latestComparisons = [...comparisonsWithDates].sort((a, b) => b.mtime - a.mtime).slice(0, 6);
+
+const CLUSTER_RULES: [string, RegExp][] = [
+  ['AI & Agents', /\bai\b|llm|writing|copilot|vector/],
+  ['Data & APIs', /database|data|\bapis?\b|orm|caching|search|backend|queue|streaming|email/],
+  [
+    'Workflows',
+    /task|project|sprint|issue|workspace|productivity|knowledge|note|messaging|newsletter|publishing|automation|video/,
+  ],
+  [
+    'Infra & Sec',
+    /observability|monitoring|security|container|devops|ci\/cd|infrastructure|incident|error|serverless|hosting/,
+  ],
+  ['Frontend & Dev', /design|css|web|frontend|component|react|framework|runtime|javascript|testing/],
+];
+
 function mapToCluster(cat: string = ''): string {
   const c = cat.toLowerCase();
-  if (c.includes('ai') || c.includes('writing') || c.includes('copilot') || c.includes('cursor')) return 'AI & Agents';
-  if (c.includes('database') || c.includes('api') || c.includes('orm') || c.includes('caching') || c.includes('backend')) return 'Data & APIs';
-  if (c.includes('task') || c.includes('project') || c.includes('sprint') || c.includes('workspace') || c.includes('productivity') || c.includes('knowledge') || c.includes('messaging') || c.includes('newsletter') || c.includes('publishing')) return 'Workflows';
-  if (c.includes('design') || c.includes('css') || c.includes('web') || c.includes('frontend')) return 'Creative & UI';
-  if (c.includes('observability') || c.includes('monitoring') || c.includes('security') || c.includes('container') || c.includes('devops')) return 'Infra & Sec';
-  return 'Cloud & Growth';
+  return CLUSTER_RULES.find(([, re]) => re.test(c))?.[0] ?? 'Cloud & Growth';
 }
 
-const comparisons = rawComparisons.map(item => ({
-  ...item,
-  cluster: mapToCluster(item.data.category),
-}));
+const comparisons = [...comparisonsWithDates]
+  .sort((a, b) => (b.data.popularity ?? 50) - (a.data.popularity ?? 50) || a.data.title.localeCompare(b.data.title))
+  .map((item) => {
+    const wordCount = (item.body || '').split(/\s+/).filter(Boolean).length;
+    const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+    const updatedDate = item.mtime
+      ? new Date(item.mtime).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+      : '';
+    return {
+      ...item,
+      cluster: mapToCluster(item.data.category),
+      readingTime,
+      updatedDate,
+    };
+  });
 
-const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Creative & UI', 'Infra & Sec', 'Cloud & Growth'];
+const clusters = ['All', 'AI & Agents', 'Data & APIs', 'Workflows', 'Frontend & Dev', 'Infra & Sec', 'Cloud & Growth'];
+
+const PAGE_SIZE = 48;
+const toolCount = new Set(rawComparisons.flatMap((c) => [c.data.tool_a, c.data.tool_b]).filter(Boolean)).size;
+const categoryCount = new Set(rawComparisons.map((c) => c.data.category || 'Developer Tools')).size;
 
 const siteUrl = 'https://stackversus.pages.dev';
 
 const schemaData = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "StackVersus",
-  "url": siteUrl,
-  "description": "Real-time architectural benchmarks, deep telemetry specs, and pricing audits to scale modern engineering stacks."
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'StackVersus',
+  url: siteUrl,
+  description:
+    'Real-time architectural benchmarks, deep telemetry specs, and pricing audits to scale modern engineering stacks.',
+};
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Home',
+      item: siteUrl,
+    },
+  ],
+};
+
+const itemListSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  itemListElement: comparisons.slice(0, 100).map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    url: `${siteUrl}/comparisons/${item.id.replace(/\.md$/, '')}/`,
+    name: item.data.title,
+  })),
 };
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="google-site-verification" content="rtsDytRNMUXcqZtXlPZqarvwSa3aukoYtoX-if1ThTc" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>StackVersus — Kinetic Benchmark Engine</title>
-    <meta name="description" content="Real-time architectural benchmarks, deep telemetry specs, and pricing audits to scale modern engineering stacks." />
-    <link rel="canonical" href={siteUrl} />
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-    
-    <meta property="og:title" content="StackVersus — Kinetic Benchmark Engine" />
-    <meta property="og:description" content="Real-time architectural benchmarks, deep telemetry specs, and pricing audits to scale modern engineering stacks." />
-    <meta property="og:url" content={siteUrl} />
-    <meta property="og:image" content="https://stackversus.pages.dev/og-preview.png" />
-    <meta property="og:image:secure_url" content="https://stackversus.pages.dev/og-preview.png" />
-    <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="StackVersus Benchmarks" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://stackversus.pages.dev/og-preview.png" />
+<BaseLayout
+  title="StackVersus — Kinetic Benchmark Engine"
+  description="Real-time architectural benchmarks, deep telemetry specs, and pricing audits to scale modern engineering stacks."
+  canonical={siteUrl}
+  ogType="website"
+  schema={[schemaData, breadcrumbSchema, itemListSchema]}
+>
+  <RibbonCanvas />
 
-    <script type="application/ld+json" set:html={JSON.stringify(schemaData)} />
+  <div class="viewport-wrapper">
+    <HudBar left="StackVersus // Kinetic System 2.0" center="Engine: StackVersus" right="State: 60 FPS Accelerated" />
 
-    <style is:global>
-      :root {
-        --z-black: #060707;
-        --z-card: rgba(14, 16, 15, 0.72);
-        --z-card-hover: rgba(22, 26, 24, 0.85);
-        --z-border: rgba(255, 255, 255, 0.08);
-        --z-border-glow: rgba(34, 229, 118, 0.4);
-        --z-lime: #22E576;
-        --z-lime-glow: rgba(34, 229, 118, 0.35);
-        --z-coral: #FF385C;
-        --z-gold: #FFC043;
-        --z-text: #F2F2F2;
-        --z-muted: #8E928E;
-      }
-
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-
-      body {
-        font-family: 'Inter', sans-serif;
-        background-color: var(--z-black);
-        color: var(--z-text);
-        min-height: 100vh;
-        overflow-x: hidden;
-      }
-
-      #zajno-motion-canvas {
-        position: fixed;
-        inset: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 0;
-        pointer-events: none;
-      }
-
-      .viewport-wrapper {
-        position: relative;
-        z-index: 1;
-        width: 95%;
-        max-width: 1720px;
-        margin: 0 auto;
-        padding: clamp(16px, 3vw, 28px) 0 60px;
-      }
-
-      /* Top HUD Bar */
-      .hud-topbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: clamp(14px, 2vw, 24px);
-        border-bottom: 1px solid var(--z-border);
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.76rem;
-        color: var(--z-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-
-      .hud-live {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--z-lime);
-        white-space: nowrap;
-      }
-
-      .hud-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--z-lime);
-        box-shadow: 0 0 10px var(--z-lime);
-        animation: pulse 1.8s infinite;
-      }
-
-      @keyframes pulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.4; transform: scale(0.8); }
-      }
-
-      /* Header & Dynamic Hero Typography */
-      header {
-        margin: clamp(24px, 4vw, 44px) 0 clamp(20px, 3vw, 36px);
-      }
-
-      .hero-tag {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: clamp(0.72rem, 1.2vw, 0.8rem);
-        color: var(--z-lime);
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        margin-bottom: 12px;
-        display: inline-block;
-      }
-
-      h1 {
-        font-family: 'Syne', sans-serif;
-        font-size: clamp(2rem, 5vw, 4.4rem);
-        font-weight: 800;
-        line-height: 1.06;
-        letter-spacing: -0.04em;
-        text-transform: uppercase;
-        color: #ffffff;
-        word-break: break-word;
-      }
-
-      h1 span.kinetic-gradient {
-        background: linear-gradient(90deg, #FFFFFF 10%, var(--z-lime) 50%, var(--z-coral) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-
-      header p {
-        font-size: clamp(0.92rem, 1.6vw, 1.05rem);
-        color: var(--z-muted);
-        max-width: 620px;
-        margin-top: 14px;
-        line-height: 1.6;
-      }
-
-      /* --- Unified Side-by-Side Toolbar --- */
-      .toolbar-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 34px;
-        width: 100%;
-      }
-
-      .search-box {
-        position: relative;
-        flex: 0 0 clamp(260px, 28vw, 380px);
-        min-width: 240px;
-      }
-
-      .search-icon {
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--z-muted);
-        pointer-events: none;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.95rem;
-      }
-
-      .search-input {
-        width: 100%;
-        padding: 11px 16px 11px 42px;
-        font-size: 0.88rem;
-        font-family: 'Inter', sans-serif;
-        color: #ffffff;
-        background: rgba(14, 18, 16, 0.7);
-        border: 1px solid var(--z-border);
-        border-radius: 999px;
-        backdrop-filter: blur(20px);
-        outline: none;
-        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      .search-input::placeholder {
-        color: var(--z-muted);
-        font-size: 0.84rem;
-      }
-
-      .search-input:focus {
-        border-color: var(--z-lime);
-        box-shadow: 0 0 16px var(--z-lime-glow);
-        background: rgba(18, 24, 21, 0.9);
-      }
-
-      .nav-container {
-        display: flex;
-        align-items: center;
-        flex: 1;
-        min-width: 0;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        mask-image: linear-gradient(to right, black 85%, transparent 100%);
-        -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
-      }
-      .nav-container::-webkit-scrollbar { display: none; }
-
-      .filter-bar {
-        display: inline-flex;
-        flex-wrap: nowrap;
-        gap: 6px;
-        padding: 5px;
-        background: rgba(14, 18, 16, 0.7);
-        border: 1px solid var(--z-border);
-        border-radius: 999px;
-        backdrop-filter: blur(20px);
-        white-space: nowrap;
-      }
-
-      .filter-pill {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        padding: 6px 16px;
-        border-radius: 999px;
-        border: 1px solid transparent;
-        background: transparent;
-        color: var(--z-muted);
-        cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        white-space: nowrap;
-        flex-shrink: 0;
-      }
-
-      .filter-pill:hover {
-        color: #ffffff;
-        background: rgba(255, 255, 255, 0.05);
-      }
-
-      .filter-pill.active {
-        background: var(--z-lime);
-        color: #000000;
-        font-weight: 700;
-        border-color: var(--z-lime);
-        box-shadow: 0 0 14px var(--z-lime-glow);
-      }
-
-      /* Grid of Cards */
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 22px;
-      }
-
-      .card {
-        position: relative;
-        background: var(--z-card);
-        border: 1px solid var(--z-border);
-        border-radius: 18px;
-        padding: 26px;
-        text-decoration: none;
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        overflow: hidden;
-        transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), 
-                    border-color 0.32s ease, 
-                    box-shadow 0.32s ease;
-      }
-
-      .card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, var(--z-lime), transparent);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-
-      .card:hover {
-        background: var(--z-card-hover);
-        transform: translateY(-5px);
-        border-color: var(--z-border-glow);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(34, 229, 118, 0.12);
-      }
-
-      .card:hover::before { opacity: 1; }
-
-      .card-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 14px;
-      }
-
-      .card-category {
-        position: relative;
-        z-index: 2;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--z-lime);
-        background: rgba(34, 229, 118, 0.1);
-        padding: 4px 10px;
-        border-radius: 6px;
-        border: 1px solid rgba(34, 229, 118, 0.25);
-        text-decoration: none;
-        display: inline-block;
-        transition: all 0.2s ease;
-      }
-
-      .card-category:hover {
-        background: var(--z-lime);
-        color: #000000;
-        box-shadow: 0 0 10px var(--z-lime-glow);
-      }
-
-      .card-idx {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.74rem;
-        color: var(--z-muted);
-      }
-
-      .card h2 {
-        font-family: 'Syne', sans-serif;
-        font-size: 1.3rem;
-        font-weight: 700;
-        line-height: 1.25;
-        letter-spacing: -0.02em;
-        color: #ffffff;
-        margin-bottom: 10px;
-      }
-
-      .card p {
-        font-size: 0.9rem;
-        color: var(--z-muted);
-        line-height: 1.6;
-        margin-bottom: 22px;
-        flex-grow: 1;
-      }
-
-      .card-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-top: 16px;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-      }
-
-      .action-pill {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: var(--z-coral);
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: gap 0.2s ease, transform 0.2s ease;
-      }
-
-      .card:hover .action-pill {
-        gap: 10px;
-        transform: translateX(4px);
-        color: #ff5e7e;
-      }
-
-      .no-results-msg {
-        display: none;
-        grid-column: 1 / -1;
-        text-align: center;
-        padding: 60px 20px;
-        font-family: 'JetBrains Mono', monospace;
-        color: var(--z-muted);
-        font-size: 0.9rem;
-        border: 1px dashed var(--z-border);
-        border-radius: 16px;
-        background: rgba(14, 18, 16, 0.4);
-      }
-
-      /* Site Footer */
-      .site-footer {
-        margin-top: 80px;
-        padding-top: 32px;
-        border-top: 1px solid var(--z-border);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 16px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.78rem;
-        color: var(--z-muted);
-      }
-
-      .site-footer a {
-        color: var(--z-muted);
-        text-decoration: none;
-        transition: color 0.2s ease;
-      }
-
-      .site-footer a:hover {
-        color: var(--z-lime);
-      }
-
-      /* Responsiveness */
-      @media (max-width: 900px) {
-        .toolbar-wrapper {
-          flex-direction: column;
-          align-items: stretch;
-          gap: 14px;
-        }
-        .search-box {
-          flex: 1 1 100%;
-          min-width: 100%;
-        }
-        .nav-container {
-          width: 100%;
-        }
-      }
-
-      @media (max-width: 640px) {
-        .hud-telemetry {
-          display: none;
-        }
-        .viewport-wrapper {
-          width: 92%;
-        }
-        .grid {
-          grid-template-columns: 1fr;
-        }
-        .site-footer {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 12px;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Motion Vector Canvas -->
-    <canvas id="zajno-motion-canvas"></canvas>
-
-    <div class="viewport-wrapper">
-      <div class="hud-topbar">
-        <div class="hud-live">
-          <span class="hud-dot"></span>
-          StackVersus // Kinetic System 2.0
+    <header class="motion-fade-up">
+      <span class="hero-tag">// Unbiased Software Intelligence</span>
+      <h1>
+        Compare Top Tools.<br />
+        <span class="kinetic-gradient">Decide In High Motion.</span>
+      </h1>
+      <p>
+        {comparisons.length}+ head-to-head comparisons of developer tools — pricing models, licensing, hosting, pros and
+        cons — so you can pick the right stack fast.
+      </p>
+      <dl class="hero-stats">
+        <div class="hero-stat">
+          <dt>Comparisons</dt>
+          <dd>{comparisons.length}</dd>
         </div>
-        <div class="hud-telemetry">Engine: StackVersus</div>
-        <div class="hud-telemetry">State: 60 FPS Accelerated</div>
+        <div class="hero-stat">
+          <dt>Tools</dt>
+          <dd>{toolCount}</dd>
+        </div>
+        <div class="hero-stat">
+          <dt>Categories</dt>
+          <dd>{categoryCount}</dd>
+        </div>
+      </dl>
+    </header>
+
+    <section class="bento motion-fade-up" aria-label="Quick navigation">
+      <a href="/trending/" class="bento-card stack-3d featured">
+        <span class="bento-label">Trending</span>
+        <strong class="bento-title">What's Hot Right Now</strong>
+        <span class="bento-desc">Community momentum, sorted Reddit-style.</span>
+      </a>
+      <a href="/tools/" class="bento-card stack-3d">
+        <span class="bento-label">Tool Hub</span>
+        <strong class="bento-title">Every Stack Profile</strong>
+        <span class="bento-desc">Specs, official links, and all comparisons per tool.</span>
+      </a>
+      <a href="/compare/" class="bento-card stack-3d">
+        <span class="bento-label">Compare Mode</span>
+        <strong class="bento-title">Side-by-Side Builder</strong>
+        <span class="bento-desc">Pick two comparisons and inspect them together.</span>
+      </a>
+      <a href="/random/" class="bento-card stack-3d">
+        <span class="bento-label">Lucky Draw</span>
+        <strong class="bento-title">Random Comparison</strong>
+        <span class="bento-desc">Let the engine pick your next read.</span>
+      </a>
+    </section>
+
+    <!-- Horizontal Unified Toolbar -->
+    <div class="toolbar-wrapper">
+      <div class="search-box">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input
+          type="text"
+          id="catalogSearch"
+          class="search-input"
+          placeholder="Search tools (e.g. Postgres, Docker)..."
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Search comparisons"
+        />
       </div>
 
-      <header>
-        <span class="hero-tag">// Unbiased Software Intelligence</span>
-        <h1>
-          Compare Top Tools.<br/>
-          <span class="kinetic-gradient">Decide In High Motion.</span>
-        </h1>
-        <p>Real-time architectural benchmarks, deep telemetry specs, and pricing audits to scale modern engineering stacks.</p>
-      </header>
-
-      <!-- Horizontal Unified Toolbar -->
-      <div class="toolbar-wrapper">
-        <div class="search-box">
-          <span class="search-icon">⌕</span>
-          <input 
-            type="text" 
-            id="catalogSearch" 
-            class="search-input" 
-            placeholder="Search tools (e.g. Postgres, Docker)..." 
-            autocomplete="off"
-            spellcheck="false"
-          />
-        </div>
-
-        <div class="nav-container">
-          <nav class="filter-bar" aria-label="Category Navigation">
-            {clusters.map((cluster, i) => (
-              <button class={`filter-pill ${i === 0 ? 'active' : ''}`} data-cluster={cluster}>
+      <div class="nav-container" role="tablist" aria-label="Category filters">
+        <nav class="filter-bar">
+          {
+            clusters.map((cluster, i) => (
+              <button
+                class={`filter-pill ${i === 0 ? 'active' : ''}`}
+                data-cluster={cluster}
+                role="tab"
+                aria-selected={i === 0 ? 'true' : 'false'}
+                tabindex={i === 0 ? 0 : -1}
+              >
                 {cluster}
               </button>
-            ))}
-          </nav>
-        </div>
+            ))
+          }
+        </nav>
+      </div>
+    </div>
+
+    <!-- Comparison Matrix Grid -->
+    <main class="grid" id="main-content">
+      <div id="no-results" class="no-results-msg" role="status" aria-live="polite">
+        // No matching architecture comparisons found for your search query.
       </div>
 
-      <!-- Comparison Matrix Grid -->
-      <main class="grid" id="comparisons-grid">
-        <div id="no-results" class="no-results-msg">
-          // No matching architecture comparisons found for your search query.
-        </div>
-
-        {comparisons.map((item, index) => {
-          const categorySlug = (item.data.category || 'Developer Tools')
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)/g, '');
-
+      {
+        comparisons.map((item, index) => {
           const formattedIndex = index + 1 < 10 ? `[0${index + 1}]` : `[${index + 1}]`;
+          const href = `/comparisons/${item.id.replace(/\.md$/, '')}/`;
 
           return (
-            <div 
-              class="card"
+            <a
+              href={href}
+              class="card stack-3d motion-fade-up"
+              style={`animation-delay: ${Math.min(index % PAGE_SIZE, 12) * 0.04}s`}
               data-cluster={item.cluster}
               data-title={item.data.title}
               data-category={item.data.category || ''}
               data-desc={item.data.description}
             >
-              <div>
-                <div class="card-meta">
-                  <a 
-                    href={`/categories/${categorySlug}`}
-                    class="card-category"
-                  >
-                    {item.data.category || 'Benchmark'}
-                  </a>
-                  <span class="card-idx">{formattedIndex}</span>
-                </div>
-                <h2>
-                  <a 
-                    href={`/comparisons/${item.id.replace(/\.md$/, '')}`} 
-                    style="color: inherit; text-decoration: none;"
-                  >
-                    {item.data.title}
-                  </a>
-                </h2>
+              <div class="card-meta">
+                <span class="card-category">{item.data.category || 'Benchmark'}</span>
+                <span class="card-idx">{formattedIndex}</span>
+              </div>
+              <div class="card-body">
+                <h2>{item.data.title}</h2>
                 <p>{item.data.description}</p>
+                <div class="card-details">
+                  <span>{item.readingTime} min read</span>
+                  {item.updatedDate && <span>Updated {item.updatedDate}</span>}
+                  <span class="card-arrow stack-cta" aria-hidden="true">
+                    Open <span class="arrow">→</span>
+                  </span>
+                </div>
               </div>
-              <div class="card-footer">
-                <a 
-                  href={`/comparisons/${item.id.replace(/\.md$/, '')}`} 
-                  class="action-pill" 
-                  style="text-decoration: none;"
-                >
-                  Launch Specs <span>→</span>
-                </a>
-              </div>
-            </div>
+            </a>
           );
-        })}
-      </main>
+        })
+      }
+    </main>
 
-      <!-- E-E-A-T Footer -->
-      <footer class="site-footer">
-        <div>
-          ©{new Date().getFullYear()} StackVersus. Independent developer tooling benchmarks.
-        </div>
-        <div style="display: flex; gap: 20px;">
-          <a href="/about">Methodology & About</a>
-          <a href="/about#disclosure">Affiliate Disclosure</a>
-        </div>
-      </footer>
+    <div class="load-more-row">
+      <p id="results-count" class="results-count" aria-live="polite"></p>
+      <button type="button" id="load-more" class="stack-cta load-more" data-page-size={PAGE_SIZE} hidden>
+        Show more comparisons <span class="arrow">↓</span>
+      </button>
     </div>
 
-    <!-- Client-Side Background Ribbon Canvas -->
-    <script>
-      const canvas = document.getElementById('zajno-motion-canvas') as HTMLCanvasElement;
-      const ctx = canvas.getContext('2d')!;
+    <section class="latest-section" aria-labelledby="latest-heading">
+      <h2 id="latest-heading" class="section-title">
+        Latest <span class="highlight">Updates</span>
+      </h2>
+      <div class="latest-grid">
+        {
+          latestComparisons.map((item) => {
+            return (
+              <a href={`/comparisons/${item.id.replace(/\.md$/, '')}/`} class="latest-card stack-3d motion-fade-up">
+                <span class="latest-category">{item.data.category || 'Benchmark'}</span>
+                <h3>{item.data.title}</h3>
+                <p>{item.data.description}</p>
+                <span class="latest-cta stack-cta">
+                  Read comparison <span class="arrow">→</span>
+                </span>
+              </a>
+            );
+          })
+        }
+      </div>
+    </section>
 
-      function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+    <Newsletter />
+
+    <Footer />
+  </div>
+
+  <script>
+    import Fuse from 'fuse.js';
+
+    const searchInput = document.getElementById('catalogSearch') as HTMLInputElement | null;
+    const noResults = document.getElementById('no-results');
+    const cards = Array.from(document.querySelectorAll<HTMLElement>('.card'));
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.filter-pill');
+
+    let currentCluster = 'All';
+    let currentQuery = '';
+
+    const searchData = cards.map((card, index) => ({
+      index,
+      title: card.getAttribute('data-title') || '',
+      category: card.getAttribute('data-category') || '',
+      desc: card.getAttribute('data-desc') || '',
+    }));
+
+    const fuse = new Fuse(searchData, {
+      keys: [
+        { name: 'title', weight: 0.6 },
+        { name: 'category', weight: 0.25 },
+        { name: 'desc', weight: 0.15 },
+      ],
+      threshold: 0.35,
+      ignoreLocation: true,
+    });
+
+    const loadMore = document.getElementById('load-more') as HTMLButtonElement | null;
+    const resultsCount = document.getElementById('results-count');
+    const pageSize = Number(loadMore?.dataset.pageSize) || 48;
+    let limit = pageSize;
+
+    function applyFilters() {
+      let matchingIndices: Set<number> | null = null;
+
+      if (currentQuery) {
+        const results = fuse.search(currentQuery);
+        matchingIndices = new Set(results.map((r) => r.item.index));
       }
-      resize();
-      window.addEventListener('resize', resize);
 
-      let mouseX = window.innerWidth / 2;
-      let mouseY = window.innerHeight / 2;
-      window.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
+      let matchCount = 0;
+
+      cards.forEach((card, idx) => {
+        const cardCluster = card.getAttribute('data-cluster');
+        const matchesCluster = currentCluster === 'All' || cardCluster === currentCluster;
+        const matchesSearch = matchingIndices === null || matchingIndices.has(idx);
+
+        if (matchesCluster && matchesSearch) {
+          card.style.display = matchCount < limit ? 'flex' : 'none';
+          matchCount++;
+        } else {
+          card.style.display = 'none';
+        }
       });
 
-      let time = 0;
-      function renderRibbon() {
-        ctx.fillStyle = '#060707';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        time += 0.016;
-
-        const normY = mouseY / Math.max(canvas.height, 1);
-
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
-        ctx.lineWidth = 1;
-        const step = 60;
-        for (let x = 0; x < canvas.width; x += step) {
-          ctx.beginPath();
-          ctx.moveTo(x, 0);
-          ctx.lineTo(x, canvas.height);
-          ctx.stroke();
-        }
-
-        const ribbons = [
-          { color: '#22E576', alpha: 0.35, width: 2.5, speed: 1.0, freq: 0.002, amp: 90 },
-          { color: '#FF385C', alpha: 0.28, width: 2.0, speed: 1.3, freq: 0.0025, amp: 120 },
-          { color: '#FFC043', alpha: 0.20, width: 1.5, speed: 0.8, freq: 0.0018, amp: 70 },
-        ];
-
-        ribbons.forEach((ribbon, i) => {
-          ctx.beginPath();
-          ctx.strokeStyle = ribbon.color;
-          ctx.lineWidth = ribbon.width;
-          ctx.globalAlpha = ribbon.alpha;
-
-          for (let x = 0; x < canvas.width; x += 8) {
-            const dynamicAmp = ribbon.amp * (0.8 + normY * 0.6);
-            const y = (canvas.height * 0.5) + 
-                      Math.sin(x * ribbon.freq + time * ribbon.speed + i) * dynamicAmp * Math.cos(time * 0.4 + i);
-
-            if (x === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-          }
-          ctx.stroke();
-        });
-
-        const flare = ctx.createRadialGradient(mouseX, mouseY, 10, mouseX, mouseY, 350);
-        flare.addColorStop(0, 'rgba(34, 229, 118, 0.08)');
-        flare.addColorStop(1, 'transparent');
-        ctx.fillStyle = flare;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.globalAlpha = 1.0;
-        requestAnimationFrame(renderRibbon);
+      const shown = Math.min(matchCount, limit);
+      if (noResults) noResults.style.display = matchCount === 0 ? 'block' : 'none';
+      if (resultsCount) resultsCount.textContent = matchCount ? `Showing ${shown} of ${matchCount} comparisons` : '';
+      if (loadMore) {
+        loadMore.hidden = shown >= matchCount;
+        loadMore.firstChild!.textContent = `Show ${Math.min(pageSize, matchCount - shown)} more `;
       }
-      renderRibbon();
-    </script>
+    }
 
-    <!-- Client-Side Search (Fuse.js) + Cluster Filter Controller -->
-    <script>
-      import Fuse from 'fuse.js';
+    function resetAndApply() {
+      limit = pageSize;
+      applyFilters();
+    }
 
-      const searchInput = document.getElementById('catalogSearch') as HTMLInputElement | null;
-      const noResults = document.getElementById('no-results');
-      const cards = Array.from(document.querySelectorAll<HTMLElement>('.card'));
-      const buttons = document.querySelectorAll<HTMLButtonElement>('.filter-pill');
+    loadMore?.addEventListener('click', () => {
+      limit += pageSize;
+      applyFilters();
+    });
 
-      let currentCluster = 'All';
-      let currentQuery = '';
-
-      const searchData = cards.map((card, index) => ({
-        index,
-        title: card.getAttribute('data-title') || '',
-        category: card.getAttribute('data-category') || '',
-        desc: card.getAttribute('data-desc') || '',
-      }));
-
-      const fuse = new Fuse(searchData, {
-        keys: [
-          { name: 'title', weight: 0.6 },
-          { name: 'category', weight: 0.25 },
-          { name: 'desc', weight: 0.15 }
-        ],
-        threshold: 0.35,
-        ignoreLocation: true
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        currentQuery = (e.target as HTMLInputElement).value.trim();
+        resetAndApply();
       });
+    }
 
-      function applyFilters() {
-        let matchingIndices: Set<number> | null = null;
+    applyFilters();
 
-        if (currentQuery) {
-          const results = fuse.search(currentQuery);
-          matchingIndices = new Set(results.map(r => r.item.index));
-        }
-
-        let visibleCount = 0;
-
-        cards.forEach((card, idx) => {
-          const cardCluster = card.getAttribute('data-cluster');
-          const matchesCluster = (currentCluster === 'All' || cardCluster === currentCluster);
-          const matchesSearch = matchingIndices === null || matchingIndices.has(idx);
-
-          if (matchesCluster && matchesSearch) {
-            card.style.display = 'flex';
-            visibleCount++;
-          } else {
-            card.style.display = 'none';
-          }
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        buttons.forEach((b) => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+          b.tabIndex = -1;
         });
-
-        if (noResults) {
-          noResults.style.display = visibleCount === 0 ? 'block' : 'none';
-        }
-      }
-
-      if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-          currentQuery = (e.target as HTMLInputElement).value.trim();
-          applyFilters();
-        });
-      }
-
-      buttons.forEach(btn => {
-        btn.addEventListener('click', () => {
-          buttons.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          currentCluster = btn.getAttribute('data-cluster') || 'All';
-          applyFilters();
-        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        btn.tabIndex = 0;
+        currentCluster = btn.getAttribute('data-cluster') || 'All';
+        resetAndApply();
       });
-    </script>
-  </body>
-</html>
+    });
+  </script>
+
+  <style>
+    header {
+      margin: clamp(24px, 4vw, 44px) 0 clamp(20px, 3vw, 36px);
+    }
+
+    .hero-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .hero-stat {
+      position: relative;
+      min-width: 130px;
+      padding: 12px 18px;
+      border-radius: 14px;
+      border: 1.5px solid transparent;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)) padding-box,
+        var(--z-gradient) border-box;
+      box-shadow: 0 10px 24px -14px rgba(106, 75, 205, 0.45);
+    }
+
+    .hero-stat dt {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--z-muted);
+    }
+
+    .hero-stat dd {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: var(--z-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .load-more-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      margin: 36px 0 10px;
+    }
+
+    .results-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--z-muted);
+    }
+
+    .load-more {
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 12px 26px;
+    }
+
+    .load-more[hidden] {
+      display: none;
+    }
+
+    .hero-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(0.72rem, 1.2vw, 0.8rem);
+      color: var(--z-lime);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 5vw, 4.4rem);
+      font-weight: 800;
+      line-height: 1.06;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+      color: var(--z-text);
+      word-break: break-word;
+    }
+
+    h1 span.kinetic-gradient {
+      background: linear-gradient(90deg, var(--z-primary) 10%, var(--z-accent) 55%, var(--z-secondary) 100%);
+      background-size: 200% auto;
+      animation: gradient-shift 5s ease infinite;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      font-size: clamp(0.92rem, 1.6vw, 1.05rem);
+      color: var(--z-muted);
+      max-width: 620px;
+      margin-top: 14px;
+      line-height: 1.6;
+    }
+
+    /* --- Bento Quick Nav --- */
+    .bento {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .bento-card {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 20px;
+      background: var(--z-surface);
+      border: 1px solid var(--z-border);
+      border-radius: 18px;
+      text-decoration: none;
+      transition:
+        transform 0.22s var(--z-ease-out),
+        border-color 0.22s ease,
+        box-shadow 0.22s ease,
+        background 0.22s ease;
+    }
+    .bento-card.featured {
+      grid-column: span 2;
+      background: linear-gradient(135deg, rgba(106, 75, 205, 0.08), rgba(214, 107, 178, 0.08));
+      border-color: rgba(106, 75, 205, 0.25);
+    }
+    .bento-card:hover,
+    .bento-card:focus-visible {
+      outline: none;
+      background: var(--z-surface-hover);
+    }
+    .bento-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--z-primary);
+    }
+    .bento-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--z-text);
+    }
+    .bento-desc {
+      font-size: 0.85rem;
+      color: var(--z-muted);
+      line-height: 1.45;
+    }
+
+    /* --- Unified Side-by-Side Toolbar --- */
+    .toolbar-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 34px;
+      width: 100%;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 0 0 clamp(260px, 28vw, 380px);
+      min-width: 240px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--z-muted);
+      pointer-events: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 11px 16px 11px 42px;
+      font-size: 0.88rem;
+      font-family: 'Inter', sans-serif;
+      color: var(--z-text);
+      background: var(--z-surface);
+      border: 1px solid var(--z-border);
+      border-radius: 999px;
+      backdrop-filter: blur(20px);
+      outline: none;
+      transition: all 0.22s var(--z-ease-out);
+    }
+
+    .search-input::placeholder {
+      color: var(--z-muted);
+      font-size: 0.84rem;
+    }
+
+    .search-input:focus {
+      border-color: var(--z-primary);
+      box-shadow: 0 0 16px var(--z-primary-glow);
+      background: var(--z-surface-hover);
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      mask-image: linear-gradient(to right, var(--z-text) 85%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, var(--z-text) 90%, transparent 100%);
+    }
+    .nav-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-bar {
+      display: inline-flex;
+      flex-wrap: nowrap;
+      gap: 6px;
+      padding: 5px;
+      background: var(--z-surface);
+      border: 1px solid var(--z-border);
+      border-radius: 999px;
+      backdrop-filter: blur(20px);
+      white-space: nowrap;
+    }
+
+    .filter-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 6px 16px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--z-muted);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .filter-pill:hover,
+    .filter-pill:focus-visible {
+      color: var(--z-text);
+      background: var(--z-surface-hover);
+      outline: none;
+    }
+
+    .filter-pill.active {
+      background: var(--z-primary);
+      color: #ffffff;
+      font-weight: 700;
+      border-color: var(--z-primary);
+      box-shadow: 0 0 14px var(--z-primary-glow);
+    }
+
+    /* Grid of Cards */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 22px;
+    }
+
+    .grid {
+      perspective: 1200px;
+      transform-style: preserve-3d;
+    }
+
+    .card {
+      position: relative;
+      background: var(--z-card);
+      border: 1px solid var(--z-border);
+      border-radius: 18px;
+      padding: 26px;
+      text-decoration: none;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card:hover,
+    .card:focus-visible {
+      background: var(--z-card-hover);
+      outline: none;
+    }
+
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      transform: translateZ(20px);
+    }
+
+    .card-category {
+      position: relative;
+      z-index: 2;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--z-primary);
+      background: rgba(106, 75, 205, 0.1);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(106, 75, 205, 0.25);
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s ease;
+    }
+
+    .card-category:hover,
+    .card-category:focus-visible {
+      background: var(--z-primary);
+      color: #ffffff;
+      box-shadow: 0 0 10px var(--z-primary-glow);
+    }
+
+    .card-idx {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      color: var(--z-muted);
+    }
+
+    .card-body {
+      transform: translateZ(16px);
+    }
+
+    .card h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.32rem;
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      color: var(--z-text);
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: var(--z-muted);
+      line-height: 1.6;
+      margin-bottom: 18px;
+      flex-grow: 1;
+    }
+
+    .card-details {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--z-muted);
+      border-top: 1px solid rgba(5, 3, 12, 0.05);
+      padding-top: 14px;
+    }
+
+    .card-details span:first-child {
+      color: var(--z-lime);
+    }
+
+    .card-arrow {
+      margin-left: auto;
+    }
+
+    .no-results-msg {
+      display: none;
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--z-muted);
+      font-size: 0.9rem;
+      border: 1px dashed var(--z-border);
+      border-radius: 16px;
+      background: var(--z-surface);
+    }
+
+    /* Responsiveness */
+    @media (max-width: 900px) {
+      .bento {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .bento-card.featured {
+        grid-column: span 1;
+      }
+      .toolbar-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+      }
+      .search-box {
+        flex: 1 1 100%;
+        min-width: 100%;
+      }
+      .nav-container {
+        width: 100%;
+      }
+    }
+
+    .latest-section {
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid var(--z-border);
+    }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--z-text);
+      margin-bottom: 28px;
+    }
+
+    .section-title .highlight {
+      color: var(--z-primary);
+    }
+
+    .latest-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .latest-card {
+      background: var(--z-card);
+      border: 1px solid var(--z-border);
+      border-radius: 16px;
+      padding: 22px;
+      text-decoration: none;
+      transition:
+        transform 0.3s ease,
+        border-color 0.3s ease;
+    }
+
+    .latest-card:hover,
+    .latest-card:focus-visible {
+      background: var(--z-card-hover);
+      outline: none;
+    }
+
+    .latest-category {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--z-primary);
+      background: rgba(106, 75, 205, 0.1);
+      border: 1px solid rgba(106, 75, 205, 0.25);
+      border-radius: 6px;
+      padding: 4px 10px;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+
+    .latest-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--z-text);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .latest-card p {
+      font-size: 0.88rem;
+      color: var(--z-muted);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .hud-telemetry {
+        display: none;
+      }
+      .viewport-wrapper {
+        width: 92%;
+      }
+      .bento {
+        grid-template-columns: 1fr;
+      }
+      .bento-card.featured {
+        grid-column: span 1;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .latest-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</BaseLayout>

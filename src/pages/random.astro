@@ -1,0 +1,56 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const comparisons = await getCollection('comparisons');
+const slugs = comparisons.map((item) => item.id.replace(/\.md$/, ''));
+---
+
+<BaseLayout
+  title="Random Comparison — StackVersus"
+  description="Discover a random developer tool comparison on StackVersus."
+  robots="noindex, follow"
+>
+  <div
+    class="viewport-wrapper"
+    style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center;"
+  >
+    <h1
+      style="font-family: 'Syne', sans-serif; font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 800; text-transform: uppercase; color: var(--z-text); margin-bottom: 18px;"
+    >
+      Picking a random comparison...
+    </h1>
+    <p style="color: var(--z-muted); max-width: 480px; margin-bottom: 32px;">
+      If you are not redirected automatically, <a id="manual-link" href="/" style="color: var(--z-primary);"
+        >click here</a
+      >.
+    </p>
+    <div class="spinner" aria-hidden="true"></div>
+  </div>
+
+  <script is:inline define:vars={{ slugs }}>
+    if (slugs.length > 0) {
+      const randomSlug = slugs[Math.floor(Math.random() * slugs.length)];
+      const target = `/comparisons/${randomSlug}/`;
+      const manualLink = document.getElementById('manual-link');
+      if (manualLink) manualLink.href = target;
+      window.location.replace(target);
+    }
+  </script>
+
+  <style>
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(106, 75, 205, 0.2);
+      border-top-color: var(--z-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</BaseLayout>

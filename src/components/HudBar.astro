@@ -1,0 +1,19 @@
+---
+export interface Props {
+  left?: string;
+  center?: string;
+  right?: string;
+  showPulse?: boolean;
+}
+
+const { left, center, right, showPulse = true } = Astro.props;
+---
+
+<div class="hud-topbar">
+  <div class="hud-live">
+    {showPulse && <span class="hud-dot" aria-hidden="true" />}
+    {left || 'StackVersus // Kinetic System 2.0'}
+  </div>
+  {center && <div class="hud-telemetry">{center}</div>}
+  {right && <div class="hud-telemetry">{right}</div>}
+</div>

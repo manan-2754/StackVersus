@@ -1,0 +1,310 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HudBar from '../components/HudBar.astro';
+import Footer from '../components/Footer.astro';
+
+const comparisons = await getCollection('comparisons');
+
+function slug(item: { id: string }) {
+  return item.id.replace(/\.md$/, '');
+}
+
+function formatToolName(slugPart: string) {
+  return slugPart
+    .split('-')
+    .map((s: string) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(' ');
+}
+
+function scoreHot(item: { data: { popularity?: number; date?: string } }) {
+  const pop = item.data.popularity ?? 50;
+  const date = item.data.date || '2024-01-01';
+  const days = Math.max(1, (Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24));
+  return pop / Math.pow(days + 2, 1.3);
+}
+
+const tabs = [
+  {
+    key: 'hot',
+    label: 'Hot',
+    items: [...comparisons].sort((a, b) => scoreHot(b) - scoreHot(a)).slice(0, 20),
+  },
+  {
+    key: 'new',
+    label: 'New',
+    items: [...comparisons].sort((a, b) => {
+      const da = new Date(b.data.date || '2024-01-01').getTime();
+      const db = new Date(a.data.date || '2024-01-01').getTime();
+      return da - db;
+    }),
+  },
+  {
+    key: 'top',
+    label: 'Top',
+    items: [...comparisons].sort((a, b) => (b.data.popularity ?? 50) - (a.data.popularity ?? 50)),
+  },
+  {
+    key: 'rising',
+    label: 'Rising',
+    items: [...comparisons].sort((a, b) => (b.data.popularity ?? 50) - (a.data.popularity ?? 50)).slice(10, 30),
+  },
+];
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://stackversus.pages.dev/' },
+    { '@type': 'ListItem', position: 2, name: 'Trending', item: 'https://stackversus.pages.dev/trending/' },
+  ],
+};
+---
+
+<BaseLayout
+  title="Trending — StackVersus"
+  description="Hot, new, and top developer tool comparisons on StackVersus."
+  canonical="https://stackversus.pages.dev/trending/"
+  schema={breadcrumbSchema}
+>
+  <div class="viewport-wrapper">
+    <HudBar left="Trending" center="Engine: StackVersus Matrix" right="State: Live Feed" />
+
+    <header class="motion-fade-up">
+      <span class="hero-tag">// Community Feed</span>
+      <h1>
+        What's <span class="kinetic-gradient">Hot Right Now</span>
+      </h1>
+      <p>Sort comparisons by community momentum, recency, and overall popularity — Reddit-style.</p>
+    </header>
+
+    <div class="tabs motion-fade-up" role="tablist" aria-label="Trending filters">
+      {
+        tabs.map((tab, i) => (
+          <button
+            class={`tab ${i === 0 ? 'active' : ''}`}
+            data-tab={tab.key}
+            role="tab"
+            aria-selected={i === 0 ? 'true' : 'false'}
+          >
+            {tab.label}
+          </button>
+        ))
+      }
+    </div>
+
+    <main class="feed" id="main-content">
+      {
+        tabs.map((tab, i) => (
+          <section class={`tab-panel ${i === 0 ? 'active' : ''}`} data-panel={tab.key} role="tabpanel">
+            <ol class="feed-list">
+              {tab.items.map((item, idx) => {
+                const itemSlug = slug(item);
+                const parts = itemSlug.split('-vs-');
+                const toolA = item.data.tool_a || formatToolName(parts[0]);
+                const toolB = item.data.tool_b || formatToolName(parts[1] || '');
+                return (
+                  <li class="feed-item">
+                    <span class="rank">{idx + 1}</span>
+                    <a href={`/comparisons/${itemSlug}/`} class="feed-link">
+                      <span class="feed-title">{item.data.title}</span>
+                      <span class="feed-meta">
+                        {toolA} vs {toolB} · {item.data.category || 'Developer Tools'}
+                      </span>
+                    </a>
+                    <span class="feed-score" style={`--score: ${Math.min(100, item.data.popularity ?? 50)}%`}>
+                      <span class="score-bar" />
+                      <span class="score-label">{(item.data.popularity ?? 50).toFixed(0)}</span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        ))
+      }
+    </main>
+
+    <Footer />
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.tab');
+    const panels = document.querySelectorAll<HTMLElement>('.tab-panel');
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        buttons.forEach((b) => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        panels.forEach((p) => p.classList.remove('active'));
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        const key = btn.getAttribute('data-tab');
+        const panel = document.querySelector<HTMLElement>(`[data-panel="${key}"]`);
+        panel?.classList.add('active');
+      });
+    });
+  </script>
+
+  <style>
+    header {
+      margin: clamp(24px, 4vw, 44px) 0 clamp(20px, 3vw, 32px);
+    }
+    .hero-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(0.72rem, 1.2vw, 0.8rem);
+      color: var(--z-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 5vw, 4.4rem);
+      font-weight: 800;
+      line-height: 1.06;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+      color: var(--z-text);
+    }
+    h1 .kinetic-gradient {
+      background: linear-gradient(90deg, var(--z-primary) 10%, var(--z-accent) 55%, var(--z-secondary) 100%);
+      background-size: 200% auto;
+      animation: gradient-shift 5s ease infinite;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header p {
+      font-size: clamp(0.92rem, 1.6vw, 1.05rem);
+      color: var(--z-muted);
+      max-width: 620px;
+      margin-top: 14px;
+      line-height: 1.6;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 8px 18px;
+      border-radius: 999px;
+      border: 1px solid var(--z-border);
+      background: var(--z-surface);
+      color: var(--z-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab:hover,
+    .tab:focus-visible {
+      color: var(--z-text);
+      background: var(--z-surface-hover);
+      outline: none;
+    }
+    .tab.active {
+      background: var(--z-primary);
+      color: #ffffff;
+      border-color: var(--z-primary);
+      box-shadow: 0 0 14px var(--z-primary-glow);
+    }
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+      animation: fade-in 0.35s ease;
+    }
+    .feed-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 80px;
+    }
+    .feed-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 18px;
+      background: var(--z-surface);
+      border: 1px solid var(--z-border);
+      border-radius: 14px;
+      transition: all 0.2s ease;
+    }
+    .feed-item:hover {
+      border-color: var(--z-border-glow);
+      transform: translateX(4px);
+      box-shadow: 0 12px 24px rgba(5, 3, 12, 0.08);
+    }
+    .rank {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: var(--z-primary);
+      min-width: 36px;
+      text-align: center;
+    }
+    .feed-link {
+      flex: 1;
+      text-decoration: none;
+      color: var(--z-text);
+    }
+    .feed-title {
+      display: block;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+    .feed-meta {
+      font-size: 0.8rem;
+      color: var(--z-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .feed-score {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 110px;
+    }
+    .score-bar {
+      flex: 1;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--z-border);
+      position: relative;
+      overflow: hidden;
+    }
+    .score-bar::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      width: var(--score);
+      background: var(--z-gradient);
+      border-radius: 999px;
+    }
+    .score-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--z-muted);
+      min-width: 24px;
+      text-align: right;
+    }
+    @media (max-width: 640px) {
+      .feed-item {
+        flex-wrap: wrap;
+      }
+      .feed-score {
+        width: 100%;
+      }
+    }
+  </style>
+</BaseLayout>

@@ -1,0 +1,309 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HudBar from '../components/HudBar.astro';
+import Footer from '../components/Footer.astro';
+
+const comparisons = await getCollection('comparisons');
+
+const searchIndex = comparisons.map((item) => ({
+  slug: item.id.replace(/\.md$/, ''),
+  title: item.data.title,
+  category: item.data.category || 'Developer Tools',
+  description: item.data.description,
+  toolA: item.data.tool_a || '',
+  toolB: item.data.tool_b || '',
+}));
+
+const siteUrl = 'https://stackversus.pages.dev';
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Home',
+      item: siteUrl,
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Search',
+      item: `${siteUrl}/search/`,
+    },
+  ],
+};
+---
+
+<BaseLayout
+  robots="noindex, follow"
+  title="Search — StackVersus"
+  description="Search all developer tool comparisons on StackVersus. Find head-to-head benchmarks by tool name, category, or keyword."
+  canonical={`${siteUrl}/search/`}
+  ogType="website"
+  schema={breadcrumbSchema}
+>
+  <div class="viewport-wrapper">
+    <HudBar left="StackVersus // Search" right={`Index: ${searchIndex.length} comparisons`} />
+
+    <header id="main-content">
+      <h1>
+        Search <span class="highlight">Comparisons</span>
+      </h1>
+      <p>Find head-to-head tool benchmarks by name, category, or keyword.</p>
+    </header>
+
+    <div class="search-box">
+      <span class="search-icon" aria-hidden="true">⌕</span>
+      <input
+        type="text"
+        id="searchInput"
+        class="search-input"
+        placeholder="Search tools (e.g. Postgres, Docker, Vercel)..."
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="Search comparisons"
+      />
+    </div>
+
+    <main class="grid" id="results-grid">
+      {
+        searchIndex.map((item) => {
+          return (
+            <a href={`/comparisons/${item.slug}/`} class="card stack-3d" data-search={JSON.stringify(item)}>
+              <div>
+                <span class="card-category">{item.category}</span>
+                <h2>{item.title}</h2>
+                <p>{item.description}</p>
+              </div>
+              <span class="action-pill stack-cta">
+                Launch Specs <span class="arrow">→</span>
+              </span>
+            </a>
+          );
+        })
+      }
+    </main>
+
+    <div id="no-results" class="no-results" role="status" aria-live="polite">// No matching comparisons found.</div>
+
+    <Footer />
+  </div>
+
+  <script>
+    import Fuse from 'fuse.js';
+
+    const input = document.getElementById('searchInput') as HTMLInputElement | null;
+    const noResults = document.getElementById('no-results');
+    const cards = Array.from(document.querySelectorAll<HTMLElement>('.card'));
+
+    const index = cards
+      .map((card) => {
+        try {
+          return JSON.parse(card.getAttribute('data-search') || '{}');
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
+
+    const fuse = new Fuse(index, {
+      keys: [
+        { name: 'title', weight: 0.5 },
+        { name: 'toolA', weight: 0.2 },
+        { name: 'toolB', weight: 0.2 },
+        { name: 'category', weight: 0.07 },
+        { name: 'description', weight: 0.03 },
+      ],
+      threshold: 0.35,
+      ignoreLocation: true,
+    });
+
+    function updateResults(query: string) {
+      const q = query.trim();
+      let matches: number[];
+
+      if (!q) {
+        matches = index.map((_, i) => i);
+      } else {
+        matches = fuse.search(q).map((r) => index.indexOf(r.item));
+      }
+
+      cards.forEach((card, i) => {
+        card.style.display = matches.includes(i) ? 'flex' : 'none';
+      });
+
+      if (noResults) {
+        noResults.style.display = matches.length === 0 ? 'block' : 'none';
+      }
+    }
+
+    if (input) {
+      input.addEventListener('input', (e) => {
+        updateResults((e.target as HTMLInputElement).value);
+      });
+
+      // Handle query param
+      const params = new URLSearchParams(window.location.search);
+      const initial = params.get('q');
+      if (initial) {
+        input.value = initial;
+        updateResults(initial);
+      }
+
+      input.focus();
+    }
+  </script>
+
+  <style>
+    header {
+      margin: clamp(24px, 4vw, 44px) 0 clamp(24px, 3vw, 36px);
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      color: var(--z-text);
+    }
+
+    .highlight {
+      color: var(--z-primary);
+    }
+
+    header p {
+      color: var(--z-muted);
+      max-width: 540px;
+      margin-top: 12px;
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: 34px;
+      max-width: 640px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--z-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 14px 20px 14px 48px;
+      font-size: 0.95rem;
+      font-family: 'Inter', sans-serif;
+      color: var(--z-text);
+      background: var(--z-surface);
+      border: 1px solid var(--z-border);
+      border-radius: 999px;
+      backdrop-filter: blur(20px);
+      outline: none;
+      transition: all 0.22s ease;
+    }
+
+    .search-input::placeholder {
+      color: var(--z-muted);
+    }
+
+    .search-input:focus {
+      border-color: var(--z-primary);
+      box-shadow: 0 0 18px var(--z-primary-glow);
+      background: var(--z-surface-hover);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 22px;
+    }
+
+    .card {
+      background: var(--z-card);
+      border: 1px solid var(--z-border);
+      border-radius: 18px;
+      padding: 26px;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition:
+        transform 0.3s ease,
+        border-color 0.3s ease;
+    }
+
+    .card:hover,
+    .card:focus-visible {
+      background: var(--z-card-hover);
+      outline: none;
+    }
+
+    .card-category {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--z-primary);
+      background: rgba(106, 75, 205, 0.1);
+      border: 1px solid rgba(106, 75, 205, 0.25);
+      border-radius: 6px;
+      padding: 4px 10px;
+      margin-bottom: 14px;
+    }
+
+    .card h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--z-text);
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: var(--z-muted);
+      line-height: 1.6;
+      margin-bottom: 22px;
+      flex-grow: 1;
+    }
+
+    .action-pill {
+      align-self: flex-start;
+    }
+
+    .no-results {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--z-muted);
+      font-size: 0.9rem;
+      border: 1px dashed var(--z-border);
+      border-radius: 16px;
+      background: var(--z-surface);
+      margin-top: 22px;
+    }
+
+    @media (max-width: 640px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .search-box {
+        width: 100%;
+      }
+    }
+  </style>
+</BaseLayout>
