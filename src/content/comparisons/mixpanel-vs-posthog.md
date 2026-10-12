@@ -5,6 +5,7 @@ category: 'Product Analytics'
 tool_a: 'Mixpanel'
 tool_b: 'PostHog'
 slug: 'mixpanel-vs-posthog'
+date: '2026-10-06'
 ---
 
 # Mixpanel vs PostHog: Head-to-Head Comparison

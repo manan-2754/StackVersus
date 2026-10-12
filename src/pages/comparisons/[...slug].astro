@@ -135,16 +135,6 @@ const articleSchema = {
   publisher: { '@type': 'Organization', name: 'StackVersus', url: siteUrl },
 };
 
-const productSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'SoftwareApplication',
-  name: `${toolA} vs ${toolB} Comparison`,
-  applicationCategory: 'DeveloperApplication',
-  operatingSystem: 'Cloud / Platform Independent',
-  description: entry.data.description,
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-};
-
 const faqSchema = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
@@ -171,7 +161,7 @@ const faqSchema = {
       ],
 };
 
-const schema = [breadcrumbSchema, articleSchema, productSchema, faqSchema];
+const schema = [breadcrumbSchema, articleSchema, faqSchema];
 
 function toolSlug(name: string) {
   return name

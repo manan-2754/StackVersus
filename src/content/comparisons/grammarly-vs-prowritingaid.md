@@ -5,6 +5,7 @@ category: 'Writing Assistants'
 tool_a: 'Grammarly'
 tool_b: 'ProWritingAid'
 slug: 'grammarly-vs-prowritingaid'
+date: '2026-10-06'
 ---
 
 # Grammarly vs ProWritingAid: Head-to-Head Comparison

@@ -5,6 +5,7 @@ category: 'Payments & Merchant of Record'
 tool_a: 'Stripe'
 tool_b: 'Paddle'
 slug: 'stripe-vs-paddle'
+date: '2026-10-06'
 ---
 
 # Stripe vs Paddle: Head-to-Head Comparison

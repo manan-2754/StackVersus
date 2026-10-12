@@ -5,6 +5,7 @@ category: 'API Testing & Client'
 tool_a: 'Postman'
 tool_b: 'Insomnia'
 slug: 'postman-vs-insomnia'
+date: '2026-10-06'
 ---
 
 # Postman vs Insomnia: Head-to-Head Comparison

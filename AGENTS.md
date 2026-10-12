@@ -10,6 +10,8 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 
 ## Catalog comparisons
 
+- `npm run build` only runs `astro build` (generated content is committed). `npm run build:full` also runs the LLM pipeline and catalog generator.
+- Animations live in `src/scripts/motion.ts` (Motion library, pinned to 13.5.1); it re-runs on `astro:page-load` and is skipped for reduced-motion users.
 - Tool data lives in `src/data/catalog.ts`. Run `npm run generate:catalog` to regenerate the data-driven comparison pages (`source: "catalog"`) in `src/content/comparisons`. Never hand-edit those files; edit the catalog instead.
 - Pairs that already have an editorial page are skipped automatically.
 - OG images are cached in `node_modules/.cache/stackversus-og`; bump `TEMPLATE_VERSION` in `src/integrations/og-images.ts` after changing the OG design.

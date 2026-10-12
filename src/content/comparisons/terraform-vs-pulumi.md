@@ -5,6 +5,7 @@ category: 'Infrastructure as Code'
 tool_a: 'Terraform'
 tool_b: 'Pulumi'
 slug: 'terraform-vs-pulumi'
+date: '2026-10-06'
 ---
 
 # Terraform vs Pulumi: Head-to-Head Comparison

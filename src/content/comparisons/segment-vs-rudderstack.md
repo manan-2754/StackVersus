@@ -5,6 +5,7 @@ category: 'Customer Data Platforms'
 tool_a: 'Segment'
 tool_b: 'RudderStack'
 slug: 'segment-vs-rudderstack'
+date: '2026-10-06'
 ---
 
 # Segment vs RudderStack: Head-to-Head Comparison

@@ -1,10 +1,11 @@
 ---
-title: 'Algolia vs Meilisearch: Search API Comparison 2024'
+title: 'Algolia vs Meilisearch: Search API Comparison'
 description: 'Compare Algolia and Meilisearch for your search API needs. Analyze pricing, hosting, typo-tolerance, and technical architecture to make the right choice.'
 category: 'Search Engine APIs'
 tool_a: 'Algolia'
 tool_b: 'Meilisearch'
 slug: 'algolia-vs-meilisearch'
+date: '2026-10-06'
 ---
 
 # Algolia vs Meilisearch: Head-to-Head Comparison

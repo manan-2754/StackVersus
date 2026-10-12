@@ -5,6 +5,7 @@ category: 'Containerization'
 tool_a: 'Docker'
 tool_b: 'Podman'
 slug: 'docker-vs-podman'
+date: '2026-10-06'
 ---
 
 # Docker vs Podman: Head-to-Head Comparison

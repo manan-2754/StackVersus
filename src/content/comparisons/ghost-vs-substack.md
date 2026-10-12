@@ -5,6 +5,7 @@ category: 'Publishing & Newsletters'
 tool_a: 'Ghost'
 tool_b: 'Substack'
 slug: 'ghost-vs-substack'
+date: '2026-10-06'
 ---
 
 # Ghost vs Substack: Head-to-Head Comparison

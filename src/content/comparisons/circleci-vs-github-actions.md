@@ -5,6 +5,7 @@ category: 'Continuous Integration'
 tool_a: 'CircleCI'
 tool_b: 'GitHub Actions'
 slug: 'circleci-vs-github-actions'
+date: '2026-10-06'
 ---
 
 # CircleCI vs GitHub Actions: Head-to-Head Comparison

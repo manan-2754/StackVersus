@@ -5,6 +5,7 @@ category: 'TypeScript ORM'
 tool_a: 'Prisma'
 tool_b: 'Drizzle ORM'
 slug: 'prisma-vs-drizzle-orm'
+date: '2026-10-06'
 ---
 
 # Prisma vs Drizzle ORM: Head-to-Head Comparison

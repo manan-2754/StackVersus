@@ -5,6 +5,7 @@ category: 'Code Security & Vulnerability'
 tool_a: 'Snyk'
 tool_b: 'SonarQube'
 slug: 'snyk-vs-sonarqube'
+date: '2026-10-06'
 ---
 
 # Snyk vs SonarQube: Head-to-Head Comparison

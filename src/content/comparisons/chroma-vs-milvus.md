@@ -1,10 +1,11 @@
 ---
-title: 'Chroma vs Milvus: Vector Database Comparison 2024'
+title: 'Chroma vs Milvus: Vector Database Comparison'
 description: 'Compare Chroma and Milvus vector search engines. Discover key differences in pricing, architecture, learning curve, and best use cases for your project.'
 category: 'Vector Search Engines'
 tool_a: 'Chroma'
 tool_b: 'Milvus'
 slug: 'chroma-vs-milvus'
+date: '2026-10-06'
 ---
 
 # Chroma vs Milvus: Head-to-Head Comparison

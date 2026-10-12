@@ -5,6 +5,7 @@ category: 'Cloud Data Warehouses'
 tool_a: 'BigQuery'
 tool_b: 'Snowflake'
 slug: 'bigquery-vs-snowflake'
+date: '2026-10-06'
 ---
 
 # BigQuery vs Snowflake: Head-to-Head Comparison

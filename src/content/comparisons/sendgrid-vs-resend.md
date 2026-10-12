@@ -5,6 +5,7 @@ category: 'Transactional Email APIs'
 tool_a: 'SendGrid'
 tool_b: 'Resend'
 slug: 'sendgrid-vs-resend'
+date: '2026-10-06'
 ---
 
 # SendGrid vs Resend: Head-to-Head Comparison

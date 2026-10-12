@@ -5,6 +5,7 @@ category: 'Backend & Database'
 tool_a: 'Supabase'
 tool_b: 'Firebase'
 slug: 'supabase-vs-firebase'
+date: '2026-10-06'
 ---
 
 # Supabase vs Firebase: Head-to-Head Comparison

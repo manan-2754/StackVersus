@@ -5,6 +5,7 @@ category: 'AI Cloud Infrastructure'
 tool_a: 'Hugging Face'
 tool_b: 'Replicate'
 slug: 'hugging-face-vs-replicate'
+date: '2026-10-06'
 ---
 
 # Hugging Face vs Replicate: Head-to-Head Comparison

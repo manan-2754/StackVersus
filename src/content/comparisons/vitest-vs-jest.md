@@ -5,6 +5,7 @@ category: 'JavaScript Testing'
 tool_a: 'Vitest'
 tool_b: 'Jest'
 slug: 'vitest-vs-jest'
+date: '2026-10-06'
 ---
 
 # Vitest vs Jest: Head-to-Head Comparison

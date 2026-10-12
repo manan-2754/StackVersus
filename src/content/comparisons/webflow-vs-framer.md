@@ -5,6 +5,7 @@ category: 'No-Code Web Design'
 tool_a: 'Webflow'
 tool_b: 'Framer'
 slug: 'webflow-vs-framer'
+date: '2026-10-06'
 ---
 
 # Webflow vs Framer: Head-to-Head Comparison

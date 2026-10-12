@@ -5,6 +5,7 @@ category: 'Serverless Databases'
 tool_a: 'Neon'
 tool_b: 'PlanetScale'
 slug: 'neon-vs-planetscale'
+date: '2026-10-06'
 ---
 
 # Neon vs PlanetScale: Head-to-Head Comparison

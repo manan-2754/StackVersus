@@ -5,6 +5,7 @@ category: 'Collaborative Docs & Workspaces'
 tool_a: 'Notion'
 tool_b: 'Coda'
 slug: 'notion-vs-coda'
+date: '2026-10-06'
 ---
 
 # Notion vs Coda: Head-to-Head Comparison

@@ -5,6 +5,7 @@ category: 'Local AI Inference'
 tool_a: 'vLLM'
 tool_b: 'Ollama'
 slug: 'vllm-vs-ollama'
+date: '2026-10-06'
 ---
 
 # vLLM vs Ollama: Head-to-Head Comparison

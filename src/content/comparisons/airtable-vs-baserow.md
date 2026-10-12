@@ -5,6 +5,7 @@ category: 'No-Code Database'
 tool_a: 'Airtable'
 tool_b: 'Baserow'
 slug: 'airtable-vs-baserow'
+date: '2026-10-06'
 ---
 
 # Airtable vs Baserow: Head-to-Head Comparison

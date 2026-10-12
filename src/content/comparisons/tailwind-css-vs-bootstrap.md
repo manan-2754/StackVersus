@@ -5,6 +5,7 @@ category: 'CSS Frameworks'
 tool_a: 'Tailwind CSS'
 tool_b: 'Bootstrap'
 slug: 'tailwind-css-vs-bootstrap'
+date: '2026-10-06'
 ---
 
 # Tailwind CSS vs Bootstrap: Head-to-Head Comparison

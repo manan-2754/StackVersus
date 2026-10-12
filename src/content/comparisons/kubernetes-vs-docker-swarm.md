@@ -5,6 +5,7 @@ category: 'Container Orchestration'
 tool_a: 'Kubernetes'
 tool_b: 'Docker Swarm'
 slug: 'kubernetes-vs-docker-swarm'
+date: '2026-10-06'
 ---
 
 # Kubernetes vs Docker Swarm: Head-to-Head Comparison

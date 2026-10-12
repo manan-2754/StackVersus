@@ -5,6 +5,7 @@ category: 'React Component Frameworks'
 tool_a: 'Chakra UI'
 tool_b: 'Mantine'
 slug: 'chakra-ui-vs-mantine'
+date: '2026-10-06'
 ---
 
 # Chakra UI vs Mantine: Head-to-Head Comparison

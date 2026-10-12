@@ -5,6 +5,7 @@ category: 'User Behavior Analytics'
 tool_a: 'Amplitude'
 tool_b: 'Mixpanel'
 slug: 'amplitude-vs-mixpanel'
+date: '2026-10-06'
 ---
 
 # Amplitude vs Mixpanel: Head-to-Head Comparison

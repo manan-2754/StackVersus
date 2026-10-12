@@ -5,6 +5,7 @@ category: 'Component Libraries'
 tool_a: 'Tailwind UI'
 tool_b: 'Shadcn UI'
 slug: 'tailwind-ui-vs-shadcn-ui'
+date: '2026-10-06'
 ---
 
 # Tailwind UI vs Shadcn UI: Head-to-Head Comparison

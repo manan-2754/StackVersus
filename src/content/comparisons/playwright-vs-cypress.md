@@ -5,6 +5,7 @@ category: 'End-to-End Testing'
 tool_a: 'Playwright'
 tool_b: 'Cypress'
 slug: 'playwright-vs-cypress'
+date: '2026-10-06'
 ---
 
 # Playwright vs Cypress: Head-to-Head Comparison

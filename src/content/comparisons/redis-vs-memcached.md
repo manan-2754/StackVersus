@@ -5,6 +5,7 @@ category: 'In-Memory Caching'
 tool_a: 'Redis'
 tool_b: 'Memcached'
 slug: 'redis-vs-memcached'
+date: '2026-10-06'
 ---
 
 # Redis vs Memcached: Head-to-Head Comparison

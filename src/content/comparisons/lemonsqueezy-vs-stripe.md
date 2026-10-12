@@ -5,6 +5,7 @@ category: 'Merchant of Record & Payments'
 tool_a: 'Lemonsqueezy'
 tool_b: 'Stripe'
 slug: 'lemonsqueezy-vs-stripe'
+date: '2026-10-06'
 ---
 
 # Lemonsqueezy vs Stripe: Head-to-Head Comparison

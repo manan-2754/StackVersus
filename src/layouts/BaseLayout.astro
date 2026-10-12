@@ -37,8 +37,9 @@ const siteUrl = 'https://stackversus.pages.dev';
 
 /** Cloudflare Pages serves directory-style URLs with a trailing slash; canonicals must match the sitemap exactly. */
 function withTrailingSlash(url: string) {
-  const { pathname } = new URL(url);
-  return pathname.endsWith('/') || /\.[a-z0-9]+$/i.test(pathname) ? url : `${url}/`;
+  const parsed = new URL(url);
+  if (!parsed.pathname.endsWith('/') && !/\.[a-z0-9]+$/i.test(parsed.pathname)) parsed.pathname += '/';
+  return parsed.href;
 }
 
 const pageCanonical = withTrailingSlash(canonical || `${siteUrl}${Astro.url.pathname}`);
@@ -280,6 +281,60 @@ const schemaScripts = schema ? (Array.isArray(schema) ? schema : [schema]).map((
       .motion-gradient {
         background-size: 200% 200%;
         animation: gradient-shift 6s ease infinite;
+      }
+
+      /* Motion layer (driven by src/scripts/motion.ts) */
+      .scroll-progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        z-index: 300;
+        background: var(--z-gradient);
+        transform-origin: 0 50%;
+        transform: scaleX(0);
+        box-shadow: 0 0 12px rgba(214, 107, 178, 0.6);
+        pointer-events: none;
+      }
+
+      .cursor-glow {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 520px;
+        height: 520px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(106, 75, 205, 0.16), rgba(214, 107, 178, 0.08) 40%, transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0;
+        will-change: transform;
+      }
+
+      .reveal-pending {
+        opacity: 0;
+        translate: 0 28px;
+        filter: blur(6px);
+      }
+
+      .reveal-in {
+        opacity: 1;
+        translate: 0 0;
+        filter: blur(0);
+        transition:
+          opacity 0.7s var(--z-ease-out) var(--reveal-delay, 0ms),
+          translate 0.9s var(--z-ease-out) var(--reveal-delay, 0ms),
+          filter 0.7s ease var(--reveal-delay, 0ms) !important;
+      }
+
+      .stack-cta,
+      .cmd-trigger,
+      .tool-pill,
+      .official-link,
+      .back-btn,
+      .tab {
+        translate: var(--mag-x, 0px) var(--mag-y, 0px);
       }
 
       /* 3D stack cards with animated gradient outline */
@@ -584,6 +639,10 @@ const schemaScripts = schema ? (Array.isArray(schema) ? schema : [schema]).map((
     <slot />
     <BackToTop />
     <CommandPalette />
+
+    <script>
+      import '../scripts/motion';
+    </script>
 
     <script>
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');

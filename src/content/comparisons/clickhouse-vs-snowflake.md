@@ -5,6 +5,7 @@ category: 'Analytical Data Warehouses'
 tool_a: 'ClickHouse'
 tool_b: 'Snowflake'
 slug: 'clickhouse-vs-snowflake'
+date: '2026-10-06'
 ---
 
 # ClickHouse vs Snowflake: Head-to-Head Comparison

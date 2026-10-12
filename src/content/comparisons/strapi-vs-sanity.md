@@ -1,10 +1,11 @@
 ---
-title: 'Strapi vs Sanity: Headless CMS Comparison 2024'
+title: 'Strapi vs Sanity: Headless CMS Comparison'
 description: 'Compare Strapi and Sanity. Explore pricing, self-hosting vs cloud, learning curves, and trade-offs to choose the best Headless CMS for your project.'
 category: 'Headless CMS'
 tool_a: 'Strapi'
 tool_b: 'Sanity'
 slug: 'strapi-vs-sanity'
+date: '2026-10-06'
 ---
 
 # Strapi vs Sanity: Head-to-Head Comparison

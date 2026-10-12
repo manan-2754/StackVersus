@@ -5,6 +5,7 @@ category: 'Frontend Cloud & Hosting'
 tool_a: 'Vercel'
 tool_b: 'Netlify'
 slug: 'vercel-vs-netlify'
+date: '2026-10-06'
 ---
 
 # Vercel vs Netlify: Head-to-Head Comparison

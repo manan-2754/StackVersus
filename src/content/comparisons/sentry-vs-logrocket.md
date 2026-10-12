@@ -5,6 +5,7 @@ category: 'Error Tracking & Monitoring'
 tool_a: 'Sentry'
 tool_b: 'LogRocket'
 slug: 'sentry-vs-logrocket'
+date: '2026-10-06'
 ---
 
 # Sentry vs LogRocket: Head-to-Head Comparison

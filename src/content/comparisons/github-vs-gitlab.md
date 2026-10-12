@@ -5,6 +5,7 @@ category: 'DevOps & Code Hosting'
 tool_a: 'GitHub'
 tool_b: 'GitLab'
 slug: 'github-vs-gitlab'
+date: '2026-10-06'
 ---
 
 # GitHub vs GitLab: Head-to-Head Comparison

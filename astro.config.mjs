@@ -8,37 +8,19 @@ import ogImages from './src/integrations/og-images.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+/**
+ * Only comparison pages get a lastmod, read from frontmatter (`lastmod`, then `date`).
+ * File mtimes are deliberately not used: on CI every file is freshly cloned, so every
+ * URL would claim "modified today" and Google learns to ignore the sitemap's lastmod.
+ */
 function getLastmodFromUrl(url) {
-  const pathname = url.replace('https://stackversus.pages.dev', '').replace(/\/$/, '') || '/';
-
-  let targetPath;
-  if (pathname.startsWith('/comparisons/')) {
-    const slug = pathname.replace('/comparisons/', '');
-    targetPath = path.join(__dirname, 'src', 'content', 'comparisons', `${slug}.md`);
-  } else if (pathname.startsWith('/categories/')) {
-    const slug = pathname.replace('/categories/', '');
-    if (!slug) {
-      targetPath = path.join(__dirname, 'src', 'pages', 'categories', 'index.astro');
-    } else {
-      targetPath = path.join(__dirname, 'src', 'pages', 'categories', '[category].astro');
-    }
-  } else if (pathname === '/') {
-    targetPath = path.join(__dirname, 'src', 'pages', 'index.astro');
-  } else if (pathname.startsWith('/tools/') || pathname === '/tools' || pathname === '/trending') {
-    targetPath = path.join(__dirname, 'src', 'data', 'catalog.ts');
-  } else if (pathname === '/about') {
-    targetPath = path.join(__dirname, 'src', 'pages', 'about.astro');
-  } else if (pathname === '/editorial-policy') {
-    targetPath = path.join(__dirname, 'src', 'pages', 'editorial-policy.astro');
-  } else if (pathname === '/privacy-policy') {
-    targetPath = path.join(__dirname, 'src', 'pages', 'privacy-policy.astro');
-  } else {
-    return undefined;
-  }
-
+  const match = new URL(url).pathname.match(/^\/comparisons\/([^/]+)\/?$/);
+  if (!match) return undefined;
   try {
-    const stats = fs.statSync(targetPath);
-    return stats.mtime.toISOString().split('T')[0];
+    const text = fs.readFileSync(path.join(__dirname, 'src', 'content', 'comparisons', `${match[1]}.md`), 'utf-8');
+    const frontmatter = text.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? '';
+    const read = (key) => frontmatter.match(new RegExp(`^${key}:\\s*["']?(\\d{4}-\\d{2}-\\d{2})`, 'm'))?.[1];
+    return read('lastmod') || read('date');
   } catch {
     return undefined;
   }
@@ -50,8 +32,6 @@ export default defineConfig({
   integrations: [
     ogImages(),
     sitemap({
-      changefreq: 'weekly',
-      priority: 0.7,
       // Keep noindex utility pages out of the sitemap so Search Console doesn't report conflicts.
       filter: (page) => !/\/(search|random|compare|404)\/?$/.test(new URL(page).pathname),
       serialize(item) {

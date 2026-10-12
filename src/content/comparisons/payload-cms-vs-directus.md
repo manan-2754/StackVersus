@@ -5,6 +5,7 @@ category: 'Backend & Headless CMS'
 tool_a: 'Payload CMS'
 tool_b: 'Directus'
 slug: 'payload-cms-vs-directus'
+date: '2026-10-06'
 ---
 
 # Payload CMS vs Directus: Head-to-Head Comparison

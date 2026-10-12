@@ -5,6 +5,7 @@ category: 'Productivity Launchers'
 tool_a: 'Raycast'
 tool_b: 'Alfred'
 slug: 'raycast-vs-alfred'
+date: '2026-10-06'
 ---
 
 # Raycast vs Alfred: Head-to-Head Comparison

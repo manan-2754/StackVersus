@@ -5,6 +5,7 @@ category: 'Issue & Sprint Tracking'
 tool_a: 'Linear'
 tool_b: 'Jira'
 slug: 'linear-vs-jira'
+date: '2026-10-06'
 ---
 
 # Linear vs Jira: Head-to-Head Comparison

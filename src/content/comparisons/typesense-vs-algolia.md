@@ -5,6 +5,7 @@ category: 'Search as a Service'
 tool_a: 'Typesense'
 tool_b: 'Algolia'
 slug: 'typesense-vs-algolia'
+date: '2026-10-06'
 ---
 
 # Typesense vs Algolia: Head-to-Head Comparison

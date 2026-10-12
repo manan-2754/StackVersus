@@ -5,6 +5,7 @@ category: 'Database Architecture'
 tool_a: 'PostgreSQL'
 tool_b: 'MongoDB'
 slug: 'postgresql-vs-mongodb'
+date: '2026-10-06'
 ---
 
 # PostgreSQL vs MongoDB: Head-to-Head Comparison

@@ -5,6 +5,7 @@ category: 'Task Management'
 tool_a: 'Asana'
 tool_b: 'Trello'
 slug: 'asana-vs-trello'
+date: '2026-10-06'
 ---
 
 # Asana vs Trello: Head-to-Head Comparison

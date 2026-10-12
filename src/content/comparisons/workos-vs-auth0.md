@@ -5,6 +5,7 @@ category: 'Enterprise Identity & SSO'
 tool_a: 'WorkOS'
 tool_b: 'Auth0'
 slug: 'workos-vs-auth0'
+date: '2026-10-06'
 ---
 
 # WorkOS vs Auth0: Head-to-Head Comparison

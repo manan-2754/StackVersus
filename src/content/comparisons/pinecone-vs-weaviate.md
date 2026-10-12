@@ -5,6 +5,7 @@ category: 'Vector Databases'
 tool_a: 'Pinecone'
 tool_b: 'Weaviate'
 slug: 'pinecone-vs-weaviate'
+date: '2026-10-06'
 ---
 
 # Pinecone vs Weaviate: Head-to-Head Comparison

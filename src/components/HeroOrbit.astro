@@ -1,0 +1,206 @@
+---
+export interface Props {
+  tools: string[];
+}
+
+const { tools } = Astro.props;
+const inner = tools.slice(0, 4);
+const outer = tools.slice(4, 10);
+---
+
+<div class="hero-orbit" aria-hidden="true">
+  <svg class="orbit-svg" viewBox="0 0 400 400">
+    <defs>
+      <linearGradient id="orbit-grad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#6a4bcd"></stop>
+        <stop offset="55%" stop-color="#d66bb2"></stop>
+        <stop offset="100%" stop-color="#de8ad4"></stop>
+      </linearGradient>
+    </defs>
+    <circle class="orbit-ring-line" cx="200" cy="200" r="112" stroke="url(#orbit-grad)"></circle>
+    <circle class="orbit-ring-line dashed" cx="200" cy="200" r="178" stroke="url(#orbit-grad)"></circle>
+    <circle class="orbit-ring-line faint" cx="200" cy="200" r="70" stroke="url(#orbit-grad)"></circle>
+  </svg>
+
+  <div class="orbit-core">
+    <span class="core-pulse"></span>
+    <span class="core-pulse delay"></span>
+    <span class="core-label">VS</span>
+  </div>
+
+  <div class="orbit-track inner">
+    {
+      inner.map((name, i) => (
+        <div class="orbit-slot" style={`--angle: ${(360 / inner.length) * i}deg`}>
+          <span class="orbit-chip">{name}</span>
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="orbit-track outer">
+    {
+      outer.map((name, i) => (
+        <div class="orbit-slot" style={`--angle: ${(360 / outer.length) * i + 30}deg`}>
+          <span class="orbit-chip">{name}</span>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .hero-orbit {
+    position: relative;
+    width: min(440px, 100%);
+    aspect-ratio: 1;
+    margin-inline: auto;
+    container-type: inline-size;
+  }
+
+  .orbit-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .orbit-ring-line {
+    fill: none;
+    stroke-width: 1.5;
+    opacity: 0.55;
+  }
+
+  .orbit-ring-line.dashed {
+    stroke-dasharray: 4 10;
+    animation: dash-flow 30s linear infinite;
+  }
+
+  .orbit-ring-line.faint {
+    opacity: 0.25;
+  }
+
+  @keyframes dash-flow {
+    to {
+      stroke-dashoffset: -280;
+    }
+  }
+
+  .orbit-core {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 96px;
+    height: 96px;
+    margin: -48px 0 0 -48px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--z-gradient);
+    background-size: 200% 200%;
+    animation: gradient-shift 5s ease infinite;
+    box-shadow:
+      0 20px 50px -10px rgba(106, 75, 205, 0.55),
+      inset 0 2px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  .core-label {
+    position: relative;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.9rem;
+    letter-spacing: -0.04em;
+    color: #ffffff;
+  }
+
+  .core-pulse {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(214, 107, 178, 0.6);
+    animation: core-pulse 2.8s var(--z-ease-out) infinite;
+  }
+
+  .core-pulse.delay {
+    animation-delay: 1.4s;
+  }
+
+  @keyframes core-pulse {
+    from {
+      transform: scale(1);
+      opacity: 0.9;
+    }
+    to {
+      transform: scale(2.2);
+      opacity: 0;
+    }
+  }
+
+  .orbit-track {
+    position: absolute;
+    inset: 0;
+    animation: orbit-spin 38s linear infinite;
+  }
+
+  .orbit-track.outer {
+    animation-duration: 60s;
+    animation-direction: reverse;
+  }
+
+  .orbit-slot {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: rotate(var(--angle)) translateX(var(--r)) rotate(calc(var(--angle) * -1));
+  }
+
+  .inner .orbit-slot {
+    --r: 28cqw;
+  }
+
+  .outer .orbit-slot {
+    --r: 44.5cqw;
+  }
+
+  .orbit-chip {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: inline-block;
+    translate: -50% -50%;
+    white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--z-text);
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1.5px solid transparent;
+    background:
+      linear-gradient(#ffffff, #ffffff) padding-box,
+      var(--z-gradient) border-box;
+    box-shadow: 0 8px 20px -10px rgba(106, 75, 205, 0.55);
+    animation: orbit-spin 38s linear infinite reverse;
+  }
+
+  .outer .orbit-chip {
+    animation-duration: 60s;
+    animation-direction: normal;
+  }
+
+  @keyframes orbit-spin {
+    to {
+      rotate: 360deg;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .orbit-track,
+    .orbit-chip,
+    .core-pulse,
+    .orbit-ring-line.dashed {
+      animation: none;
+    }
+  }
+</style>

@@ -1,10 +1,11 @@
 ---
-title: 'Grafana vs Datadog: Observability Comparison (2024)'
+title: 'Grafana vs Datadog: Observability Comparison'
 description: 'Compare Grafana and Datadog for observability. Analyze pricing models, learning curves, features, and find out which platform fits your stack best.'
 category: 'Observability & Dashboards'
 tool_a: 'Grafana'
 tool_b: 'Datadog'
 slug: 'grafana-vs-datadog'
+date: '2026-10-06'
 ---
 
 # Grafana vs Datadog: Head-to-Head Comparison

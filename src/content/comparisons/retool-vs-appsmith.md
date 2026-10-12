@@ -5,6 +5,7 @@ category: 'Internal Tool Builders'
 tool_a: 'Retool'
 tool_b: 'Appsmith'
 slug: 'retool-vs-appsmith'
+date: '2026-10-06'
 ---
 
 # Retool vs Appsmith: Head-to-Head Comparison

@@ -5,6 +5,7 @@ category: 'AI Code Editors'
 tool_a: 'Cursor'
 tool_b: 'GitHub Copilot'
 slug: 'cursor-vs-github-copilot'
+date: '2026-10-06'
 ---
 
 # Cursor vs GitHub Copilot: Head-to-Head Comparison

@@ -5,6 +5,7 @@ category: 'Authentication & User Management'
 tool_a: 'Kinde'
 tool_b: 'Clerk'
 slug: 'kinde-vs-clerk'
+date: '2026-10-06'
 ---
 
 # Kinde vs Clerk: Head-to-Head Comparison

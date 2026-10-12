@@ -6,8 +6,15 @@ import HudBar from '../components/HudBar.astro';
 import Footer from '../components/Footer.astro';
 import RibbonCanvas from '../components/RibbonCanvas.astro';
 import Newsletter from '../components/Newsletter.astro';
+import HeroOrbit from '../components/HeroOrbit.astro';
+import { CATALOG } from '../data/catalog';
 
 const rawComparisons = await getCollection('comparisons');
+
+const orbitTools = [...new Map(CATALOG.flatMap((c) => c.tools).map((t) => [t.name, t])).values()]
+  .sort((a, b) => b.popularity - a.popularity)
+  .slice(0, 10)
+  .map((t) => t.name);
 
 const comparisonsWithDates = rawComparisons.map((item) => {
   let mtime = 0;
@@ -110,30 +117,33 @@ const itemListSchema = {
   <div class="viewport-wrapper">
     <HudBar left="StackVersus // Kinetic System 2.0" center="Engine: StackVersus" right="State: 60 FPS Accelerated" />
 
-    <header class="motion-fade-up">
-      <span class="hero-tag">// Unbiased Software Intelligence</span>
-      <h1>
-        Compare Top Tools.<br />
-        <span class="kinetic-gradient">Decide In High Motion.</span>
-      </h1>
-      <p>
-        {comparisons.length}+ head-to-head comparisons of developer tools — pricing models, licensing, hosting, pros and
-        cons — so you can pick the right stack fast.
-      </p>
-      <dl class="hero-stats">
-        <div class="hero-stat">
-          <dt>Comparisons</dt>
-          <dd>{comparisons.length}</dd>
-        </div>
-        <div class="hero-stat">
-          <dt>Tools</dt>
-          <dd>{toolCount}</dd>
-        </div>
-        <div class="hero-stat">
-          <dt>Categories</dt>
-          <dd>{categoryCount}</dd>
-        </div>
-      </dl>
+    <header class="hero">
+      <div class="hero-copy">
+        <span class="hero-tag" data-hero-line>// Unbiased Software Intelligence</span>
+        <h1>
+          <span class="hero-line" data-hero-line>Compare Top Tools.</span>
+          <span class="hero-line kinetic-gradient" data-hero-line>Decide In High Motion.</span>
+        </h1>
+        <p data-hero-line>
+          {comparisons.length}+ head-to-head comparisons of developer tools — pricing models, licensing, hosting, pros
+          and cons — so you can pick the right stack fast.
+        </p>
+        <dl class="hero-stats">
+          <div class="hero-stat">
+            <dt>Comparisons</dt>
+            <dd data-count={comparisons.length}>{comparisons.length}</dd>
+          </div>
+          <div class="hero-stat">
+            <dt>Tools</dt>
+            <dd data-count={toolCount}>{toolCount}</dd>
+          </div>
+          <div class="hero-stat">
+            <dt>Categories</dt>
+            <dd data-count={categoryCount}>{categoryCount}</dd>
+          </div>
+        </dl>
+      </div>
+      <HeroOrbit tools={orbitTools} />
     </header>
 
     <section class="bento motion-fade-up" aria-label="Quick navigation">
@@ -471,6 +481,26 @@ const itemListSchema = {
       max-width: 620px;
       margin-top: 14px;
       line-height: 1.6;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+      align-items: center;
+      gap: clamp(24px, 4vw, 56px);
+    }
+
+    .hero-line {
+      display: block;
+    }
+
+    @media (max-width: 960px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+      .hero :global(.hero-orbit) {
+        width: min(340px, 86vw);
+      }
     }
 
     /* --- Bento Quick Nav --- */

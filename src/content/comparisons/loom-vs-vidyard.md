@@ -1,10 +1,11 @@
 ---
-title: 'Loom vs Vidyard: Best Asynchronous Video Tool for 2024'
+title: 'Loom vs Vidyard: Best Asynchronous Video Tool for'
 description: 'Compare Loom and Vidyard to find the best asynchronous video messaging tool for your team. We break down pricing, features, and ideal use cases.'
 category: 'Asynchronous Video Messaging'
 tool_a: 'Loom'
 tool_b: 'Vidyard'
 slug: 'loom-vs-vidyard'
+date: '2026-10-06'
 ---
 
 # Loom vs Vidyard: Head-to-Head Comparison

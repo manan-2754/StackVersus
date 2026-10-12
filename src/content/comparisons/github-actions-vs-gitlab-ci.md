@@ -5,6 +5,7 @@ category: 'CI/CD Pipelines'
 tool_a: 'GitHub Actions'
 tool_b: 'GitLab CI'
 slug: 'github-actions-vs-gitlab-ci'
+date: '2026-10-06'
 ---
 
 # GitHub Actions vs GitLab CI: Head-to-Head Comparison

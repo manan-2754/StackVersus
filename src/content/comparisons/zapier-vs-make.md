@@ -5,6 +5,7 @@ category: 'Workflow Automation'
 tool_a: 'Zapier'
 tool_b: 'Make'
 slug: 'zapier-vs-make'
+date: '2026-10-06'
 ---
 
 # Zapier vs Make: Head-to-Head Comparison

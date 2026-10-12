@@ -5,6 +5,7 @@ category: 'Serverless Compute'
 tool_a: 'AWS Lambda'
 tool_b: 'Cloudflare Workers'
 slug: 'aws-lambda-vs-cloudflare-workers'
+date: '2026-10-06'
 ---
 
 # AWS Lambda vs Cloudflare Workers: Head-to-Head Comparison

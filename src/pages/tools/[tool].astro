@@ -28,7 +28,7 @@ const softwareAppSchema = {
   name: tool.name,
   applicationCategory: tool.categories[0] || 'DeveloperApplication',
   url: tool.officialUrl,
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  description: tool.description,
 };
 ---
 

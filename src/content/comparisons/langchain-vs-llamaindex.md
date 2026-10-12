@@ -1,10 +1,11 @@
 ---
-title: 'LangChain vs LlamaIndex: AI Frameworks Compared (2025)'
+title: 'LangChain vs LlamaIndex: AI Frameworks Compared'
 description: 'Compare LangChain vs LlamaIndex. Learn key differences in RAG retrieval, agentic workflows, pricing models, and how to choose the right framework.'
 category: 'AI Frameworks'
 tool_a: 'LangChain'
 tool_b: 'LlamaIndex'
 slug: 'langchain-vs-llamaindex'
+date: '2026-10-06'
 ---
 
 # LangChain vs LlamaIndex: Head-to-Head Comparison

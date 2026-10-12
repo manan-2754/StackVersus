@@ -1,10 +1,11 @@
 ---
-title: 'Astro vs Next.js: Modern Web Framework Comparison 2024'
+title: 'Astro vs Next.js: Modern Web Framework Comparison'
 description: 'Compare Astro and Next.js for your next web project. Explore performance, rendering models, pricing, learning curves, and ideal use cases.'
 category: 'Modern Web Frameworks'
 tool_a: 'Astro'
 tool_b: 'Next.js'
 slug: 'astro-vs-next.js'
+date: '2026-10-06'
 ---
 
 # Astro vs Next.js: Head-to-Head Comparison

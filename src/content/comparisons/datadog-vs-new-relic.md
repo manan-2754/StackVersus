@@ -1,10 +1,11 @@
 ---
-title: 'Datadog vs New Relic: Cloud Observability Comparison 2024'
+title: 'Datadog vs New Relic: Cloud Observability Comparison'
 description: 'Compare Datadog and New Relic for cloud observability. We break down pricing, learning curves, and key features to help you choose the right platform.'
 category: 'Cloud Observability'
 tool_a: 'Datadog'
 tool_b: 'New Relic'
 slug: 'datadog-vs-new-relic'
+date: '2026-10-06'
 ---
 
 # Datadog vs New Relic: Head-to-Head Comparison

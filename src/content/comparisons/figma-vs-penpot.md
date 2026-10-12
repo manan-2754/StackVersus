@@ -5,6 +5,7 @@ category: 'UI/UX Design'
 tool_a: 'Figma'
 tool_b: 'Penpot'
 slug: 'figma-vs-penpot'
+date: '2026-10-06'
 ---
 
 # Figma vs Penpot: Head-to-Head Comparison

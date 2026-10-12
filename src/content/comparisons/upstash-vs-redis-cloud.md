@@ -5,6 +5,7 @@ category: 'Serverless Redis'
 tool_a: 'Upstash'
 tool_b: 'Redis Cloud'
 slug: 'upstash-vs-redis-cloud'
+date: '2026-10-06'
 ---
 
 # Upstash vs Redis Cloud: Head-to-Head Comparison

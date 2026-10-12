@@ -5,6 +5,7 @@ category: 'JavaScript Runtimes'
 tool_a: 'Bun'
 tool_b: 'Node.js'
 slug: 'bun-vs-node.js'
+date: '2026-10-06'
 ---
 
 # Bun vs Node.js: Head-to-Head Comparison

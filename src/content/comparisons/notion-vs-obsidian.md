@@ -5,6 +5,7 @@ category: 'Note-Taking & Knowledge Management'
 tool_a: 'Notion'
 tool_b: 'Obsidian'
 slug: 'notion-vs-obsidian'
+date: '2026-10-06'
 ---
 
 # Notion vs Obsidian: Head-to-Head Comparison

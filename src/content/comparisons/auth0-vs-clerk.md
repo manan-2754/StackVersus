@@ -5,6 +5,7 @@ category: 'Authentication & Identity'
 tool_a: 'Auth0'
 tool_b: 'Clerk'
 slug: 'auth0-vs-clerk'
+date: '2026-10-06'
 ---
 
 # Auth0 vs Clerk: Head-to-Head Comparison

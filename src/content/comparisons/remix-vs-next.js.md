@@ -5,6 +5,7 @@ category: 'Full-Stack React Frameworks'
 tool_a: 'Remix'
 tool_b: 'Next.js'
 slug: 'remix-vs-next.js'
+date: '2026-10-06'
 ---
 
 # Remix vs Next.js: Head-to-Head Comparison

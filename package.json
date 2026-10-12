@@ -26,6 +26,7 @@
     "astro": "^7.3.6",
     "fuse.js": "^7.5.0",
     "js-yaml": "^5.4.3",
+    "motion": "13.5.1",
     "satori": "^0.44.0",
     "typeface-inter": "^3.18.1",
     "typeface-roboto": "^1.1.13"

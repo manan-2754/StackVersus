@@ -5,6 +5,7 @@ category: 'Edge Data Storage'
 tool_a: 'Turso'
 tool_b: 'Supabase'
 slug: 'turso-vs-supabase'
+date: '2026-10-06'
 ---
 
 # Turso vs Supabase: Head-to-Head Comparison
