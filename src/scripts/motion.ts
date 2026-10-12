@@ -1,4 +1,5 @@
 import { animate, inView, scroll, stagger } from 'motion';
+import { setupTabStages } from './tab-stages';
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const finePointer = window.matchMedia('(pointer: fine)');
@@ -210,6 +211,7 @@ function init() {
   setupOrbit();
   setupVersusHeader();
   setupTabPanels();
+  setupTabStages();
   setupScoreBars();
 }
 
