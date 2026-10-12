@@ -1,11 +1,15 @@
 ---
+import Shape from './Shape.astro';
+
 export interface Props {
   kind: 'overview' | 'specs' | 'faq' | 'community';
   toolA: string;
   toolB: string;
+  category?: string;
 }
 
-const { kind, toolA, toolB } = Astro.props;
+const { kind, toolA, toolB, category = '' } = Astro.props;
+
 const initials = (name: string) =>
   name
     .replace(/[^A-Za-z0-9 ]/g, ' ')
@@ -14,11 +18,34 @@ const initials = (name: string) =>
     .slice(0, 2)
     .map((w) => w[0].toUpperCase())
     .join('') || name.slice(0, 2).toUpperCase();
+
+type Theme = { shape: string; accent: 'purple' | 'pink' | 'lavender' | 'cyan' };
+
+function getTheme(category: string): Theme {
+  const cat = category.toLowerCase();
+  // Most specific categories first so "AI Frameworks" becomes a neural node, not a layer.
+  if (cat.includes('database') || cat.includes('storage')) return { shape: 'shard', accent: 'cyan' };
+  if (cat.includes('ai') || cat.includes('machine learning') || cat.includes('llm') || cat.includes('model'))
+    return { shape: 'node', accent: 'pink' };
+  if (cat.includes('security') || cat.includes('auth')) return { shape: 'shield', accent: 'purple' };
+  if (cat.includes('monitor') || cat.includes('observ')) return { shape: 'ring', accent: 'cyan' };
+  if (cat.includes('design') || cat.includes('creative') || cat.includes('ui') || cat.includes('ux'))
+    return { shape: 'sphere', accent: 'pink' };
+  if (cat.includes('mobile') || cat.includes('native')) return { shape: 'hex', accent: 'lavender' };
+  if (cat.includes('cloud') || cat.includes('hosting') || cat.includes('infrastructure') || cat.includes('platform'))
+    return { shape: 'hex', accent: 'lavender' };
+  if (cat.includes('framework') || cat.includes('frontend') || cat.includes('javascript'))
+    return { shape: 'layer', accent: 'purple' };
+  return { shape: 'cube', accent: 'purple' };
+}
+
+const themeA = getTheme(category);
+const themeB = getTheme(category);
 ---
 
 {
   kind === 'overview' && (
-    <div class="tab-stage stage-duel" data-stage="overview" aria-hidden="true">
+    <div class="tab-stage stage-duel" data-stage="overview" data-theme={themeA.shape} aria-hidden="true">
       <svg class="duel-svg">
         <defs>
           <linearGradient id="duel-grad" x1="0" y1="0" x2="1" y2="0">
@@ -30,14 +57,12 @@ const initials = (name: string) =>
         <path class="duel-beam-glow" />
         <path class="duel-beam" />
       </svg>
-      <div class="duel-orb orb-a">
-        <span class="orb-initials">{initials(toolA)}</span>
-        <span class="orb-name">{toolA}</span>
+      <div class="shape shape-a" data-shape={themeA.shape} data-accent={themeA.accent}>
+        <Shape shape={themeA.shape} initials={initials(toolA)} />
       </div>
       <div class="duel-spark" />
-      <div class="duel-orb orb-b">
-        <span class="orb-initials">{initials(toolB)}</span>
-        <span class="orb-name">{toolB}</span>
+      <div class="shape shape-b" data-shape={themeB.shape} data-accent={themeB.accent}>
+        <Shape shape={themeB.shape} initials={initials(toolB)} />
       </div>
       <p class="stage-hint">Move to shift the balance · click to fire a pulse</p>
     </div>
@@ -46,17 +71,27 @@ const initials = (name: string) =>
 
 {
   kind === 'specs' && (
-    <div class="tab-stage stage-balance" data-stage="specs" aria-hidden="true">
+    <div class="tab-stage stage-balance" data-stage="specs" data-theme={themeA.shape} aria-hidden="true">
       <div class="balance-rig">
         <div class="balance-pillar" />
         <div class="balance-beam">
           <div class="balance-pan pan-a">
             <span class="pan-strings" />
-            <span class="pan-dish">{toolA}</span>
+            <div class="pan-dish">
+              <div class="shape shape-a" data-shape={themeA.shape} data-accent={themeA.accent}>
+                <Shape shape={themeA.shape} initials={initials(toolA)} />
+              </div>
+              <span class="pan-label">{toolA}</span>
+            </div>
           </div>
           <div class="balance-pan pan-b">
             <span class="pan-strings" />
-            <span class="pan-dish">{toolB}</span>
+            <div class="pan-dish">
+              <div class="shape shape-b" data-shape={themeB.shape} data-accent={themeB.accent}>
+                <Shape shape={themeB.shape} initials={initials(toolB)} />
+              </div>
+              <span class="pan-label">{toolB}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -134,6 +169,8 @@ const initials = (name: string) =>
       var(--z-gradient) border-box;
     cursor: crosshair;
     user-select: none;
+    perspective: 900px;
+    transform-style: preserve-3d;
   }
 
   .stage-hint {
@@ -191,48 +228,229 @@ const initials = (name: string) =>
     }
   }
 
-  .duel-orb {
+  .shape {
     position: absolute;
     top: 50%;
-    width: 92px;
-    height: 92px;
-    margin-top: -56px;
-    border-radius: 50%;
+    width: 88px;
+    height: 88px;
+    margin-top: -54px;
+    transform-style: preserve-3d;
     display: grid;
     place-items: center;
-    align-content: center;
-    gap: 2px;
     color: #ffffff;
-    box-shadow:
-      0 18px 40px -14px rgba(106, 75, 205, 0.6),
-      inset 0 2px 0 rgba(255, 255, 255, 0.35);
+    filter: drop-shadow(0 18px 28px rgba(106, 75, 205, 0.35));
+    transition: filter 0.3s ease;
   }
 
-  .duel-orb.orb-a {
+  .shape.shape-a {
     left: 7%;
-    background: linear-gradient(135deg, #6a4bcd, #8f6ee6);
   }
 
-  .duel-orb.orb-b {
+  .shape.shape-b {
     right: 7%;
-    background: linear-gradient(135deg, #d66bb2, #de8ad4);
   }
 
-  .orb-initials {
+  .mono-initials {
     font-family: 'Syne', sans-serif;
     font-weight: 800;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     line-height: 1;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   }
 
-  .orb-name {
-    max-width: 80px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.58rem;
-    opacity: 0.9;
+  /* Cube */
+  .shape[data-shape='cube'] {
+    --cube-size: 56px;
+    width: var(--cube-size);
+    height: var(--cube-size);
+  }
+
+  .shape[data-shape='cube'] .face {
+    position: absolute;
+    width: var(--cube-size);
+    height: var(--cube-size);
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    backface-visibility: visible;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+  }
+
+  .shape[data-shape='cube'][data-accent='purple'] .face,
+  .shape[data-shape='cube']:not([data-accent]) .face {
+    background: linear-gradient(135deg, #6a4bcd, #8f6ee6);
+  }
+  .shape[data-shape='cube'][data-accent='pink'] .face {
+    background: linear-gradient(135deg, #d66bb2, #de8ad4);
+  }
+  .shape[data-shape='cube'][data-accent='lavender'] .face {
+    background: linear-gradient(135deg, #9b8be6, #c4b8f6);
+  }
+  .shape[data-shape='cube'][data-accent='cyan'] .face {
+    background: linear-gradient(135deg, #4b90cd, #6ecfe6);
+  }
+
+  .shape[data-shape='cube'] .face-front {
+    transform: translateZ(calc(var(--cube-size) / 2));
+  }
+  .shape[data-shape='cube'] .face-back {
+    transform: rotateY(180deg) translateZ(calc(var(--cube-size) / 2));
+  }
+  .shape[data-shape='cube'] .face-right {
+    transform: rotateY(90deg) translateZ(calc(var(--cube-size) / 2));
+  }
+  .shape[data-shape='cube'] .face-left {
+    transform: rotateY(-90deg) translateZ(calc(var(--cube-size) / 2));
+  }
+  .shape[data-shape='cube'] .face-top {
+    transform: rotateX(90deg) translateZ(calc(var(--cube-size) / 2));
+  }
+  .shape[data-shape='cube'] .face-bottom {
+    transform: rotateX(-90deg) translateZ(calc(var(--cube-size) / 2));
+  }
+
+  /* Sphere */
+  .shape[data-shape='sphere'] {
+    border-radius: 50%;
+    width: 68px;
+    height: 68px;
+    display: grid;
+    place-items: center;
+  }
+  .shape[data-shape='sphere'] .mono-initials {
+    z-index: 2;
+  }
+  .shape[data-shape='sphere']::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 40%),
+      linear-gradient(135deg, #d66bb2, #de8ad4);
+    box-shadow:
+      inset -8px -8px 20px rgba(0, 0, 0, 0.15),
+      0 14px 34px -10px rgba(214, 107, 178, 0.45);
+  }
+
+  /* Shard */
+  .shape[data-shape='shard'] {
+    width: 52px;
+    height: 72px;
+    clip-path: polygon(50% 0%, 100% 35%, 85% 100%, 15% 100%, 0% 35%);
+    background: linear-gradient(135deg, #4b90cd, #6ecfe6);
+    display: grid;
+    place-items: center;
+    box-shadow: 0 14px 30px -10px rgba(75, 144, 205, 0.45);
+  }
+
+  /* Hex */
+  .shape[data-shape='hex'] {
+    width: 74px;
+    height: 82px;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: linear-gradient(135deg, #9b8be6, #c4b8f6);
+    display: grid;
+    place-items: center;
+    box-shadow: 0 14px 30px -10px rgba(155, 139, 230, 0.45);
+  }
+
+  /* Layer stack */
+  .shape[data-shape='layer'] {
+    width: 64px;
+    height: 64px;
+    transform-style: preserve-3d;
+  }
+  .shape[data-shape='layer'] .layer {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: linear-gradient(135deg, #6a4bcd, #8f6ee6);
+    box-shadow: 0 4px 12px rgba(106, 75, 205, 0.25);
+  }
+  .shape[data-shape='layer'] .layer-1 {
+    transform: translateZ(14px);
+  }
+  .shape[data-shape='layer'] .layer-2 {
+    transform: translateZ(7px);
+    opacity: 0.85;
+  }
+  .shape[data-shape='layer'] .layer-3 {
+    transform: translateZ(0px);
+    opacity: 0.7;
+  }
+  .shape[data-shape='layer'] .layer-initials {
+    position: absolute;
+    z-index: 4;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Neural node */
+  .shape[data-shape='node'] {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ffffff, #de8ad4 40%, #d66bb2 70%);
+    box-shadow:
+      0 0 0 6px rgba(222, 138, 212, 0.25),
+      0 0 0 12px rgba(222, 138, 212, 0.12),
+      0 16px 34px -10px rgba(214, 107, 178, 0.45);
+    display: grid;
+    place-items: center;
+  }
+
+  /* Shield */
+  .shape[data-shape='shield'] {
+    width: 62px;
+    height: 70px;
+    background: linear-gradient(135deg, #6a4bcd, #8f6ee6);
+    clip-path: path('M31 2 L58 14 L58 34 C58 52 31 68 31 68 C31 68 4 52 4 34 L4 14 Z');
+    display: grid;
+    place-items: center;
+    box-shadow: 0 14px 30px -10px rgba(106, 75, 205, 0.45);
+  }
+
+  /* Ring / monitor */
+  .shape[data-shape='ring'] {
+    width: 72px;
+    height: 72px;
+    display: grid;
+    place-items: center;
+  }
+  .shape[data-shape='ring'] .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 3px solid rgba(75, 144, 205, 0.6);
+  }
+  .shape[data-shape='ring'] .ring-1 {
+    width: 72px;
+    height: 72px;
+  }
+  .shape[data-shape='ring'] .ring-2 {
+    width: 52px;
+    height: 52px;
+    border-color: rgba(75, 144, 205, 0.4);
+  }
+  .shape[data-shape='ring'] .ring-3 {
+    width: 32px;
+    height: 32px;
+    background: rgba(75, 144, 205, 0.25);
+    border: none;
+  }
+  .shape[data-shape='ring'] .ring-initials {
+    position: absolute;
+    z-index: 2;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    color: #2b4c66;
   }
 
   .duel-spark {
@@ -340,20 +558,38 @@ const initials = (name: string) =>
   }
 
   .pan-dish {
-    min-width: 86px;
-    max-width: 120px;
+    position: relative;
+    min-width: 92px;
+    max-width: 130px;
+    min-height: 74px;
+    display: grid;
+    place-items: center;
+    padding: 8px 10px 22px;
+    border-radius: 0 0 40px 40px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(247, 245, 252, 0.55));
+    border: 1px solid rgba(106, 75, 205, 0.18);
+    box-shadow: 0 12px 24px -12px rgba(106, 75, 205, 0.35);
+  }
+
+  .pan-dish .shape {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    margin: -18px 0 -10px;
+    transform: scale(0.72);
+    filter: drop-shadow(0 8px 14px rgba(106, 75, 205, 0.3));
+  }
+
+  .pan-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--z-text);
+    max-width: 110px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    text-align: center;
-    padding: 6px 10px;
-    border-radius: 0 0 40px 40px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.66rem;
-    font-weight: 700;
-    color: #ffffff;
-    background: var(--z-gradient);
-    box-shadow: 0 10px 20px -10px rgba(106, 75, 205, 0.7);
   }
 
   .balance-meters {
@@ -414,6 +650,7 @@ const initials = (name: string) =>
     align-items: center;
     justify-content: space-around;
     padding: 0 3%;
+    transform-style: preserve-3d;
   }
 
   .q-glyph {
@@ -429,6 +666,9 @@ const initials = (name: string) =>
     opacity: 0.45;
     animation: q-bob calc(3s + var(--i) * 0.35s) ease-in-out infinite alternate;
     transition: opacity 0.3s ease;
+    transform-style: preserve-3d;
+    transform-origin: center center;
+    will-change: transform;
   }
 
   .q-glyph.lit {
@@ -463,10 +703,53 @@ const initials = (name: string) =>
     .balance-meters {
       display: none;
     }
-    .duel-orb {
-      width: 72px;
-      height: 72px;
-      margin-top: -44px;
+    .shape {
+      width: 64px;
+      height: 64px;
+      margin-top: -40px;
+    }
+    .shape[data-shape='cube'] {
+      --cube-size: 44px;
+    }
+    .shape[data-shape='sphere'] {
+      width: 54px;
+      height: 54px;
+    }
+    .shape[data-shape='shard'] {
+      width: 40px;
+      height: 56px;
+    }
+    .shape[data-shape='hex'] {
+      width: 56px;
+      height: 62px;
+    }
+    .shape[data-shape='layer'] {
+      width: 50px;
+      height: 50px;
+    }
+    .shape[data-shape='node'] {
+      width: 50px;
+      height: 50px;
+    }
+    .shape[data-shape='shield'] {
+      width: 48px;
+      height: 54px;
+    }
+    .shape[data-shape='ring'] {
+      width: 56px;
+      height: 56px;
+    }
+    .shape[data-shape='ring'] .ring-1 {
+      width: 56px;
+      height: 56px;
+    }
+    .shape[data-shape='ring'] .ring-2 {
+      width: 40px;
+      height: 40px;
+    }
+    .shape[data-shape='ring'] .ring-3 {
+      width: 24px;
+      height: 24px;
     }
   }
 

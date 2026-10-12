@@ -38,8 +38,8 @@ function createDuel(stage: HTMLElement): Stage {
   const svg = stage.querySelector<SVGSVGElement>('.duel-svg')!;
   const beam = stage.querySelector<SVGPathElement>('.duel-beam')!;
   const glow = stage.querySelector<SVGPathElement>('.duel-beam-glow')!;
-  const orbA = stage.querySelector<HTMLElement>('.orb-a')!;
-  const orbB = stage.querySelector<HTMLElement>('.orb-b')!;
+  const shapeA = stage.querySelector<HTMLElement>('.shape-a')!;
+  const shapeB = stage.querySelector<HTMLElement>('.shape-b')!;
   const spark = stage.querySelector<HTMLElement>('.duel-spark')!;
 
   let bend = 0;
@@ -47,8 +47,8 @@ function createDuel(stage: HTMLElement): Stage {
 
   const geometry = () => {
     const s = stage.getBoundingClientRect();
-    const a = orbA.getBoundingClientRect();
-    const b = orbB.getBoundingClientRect();
+    const a = shapeA.getBoundingClientRect();
+    const b = shapeB.getBoundingClientRect();
     return {
       w: s.width,
       h: s.height,
@@ -76,8 +76,16 @@ function createDuel(stage: HTMLElement): Stage {
   const moveSpark = (opts = SOFT) => {
     const { px, py } = draw();
     animate(spark, { x: px, y: py }, opts);
-    animate(orbA, { scale: 1 + (0.5 - balance) * 0.35 }, SPRING);
-    animate(orbB, { scale: 1 + (balance - 0.5) * 0.35 }, SPRING);
+    animate(shapeA, { scale: 1 + (0.5 - balance) * 0.25 }, SPRING);
+    animate(shapeB, { scale: 1 + (balance - 0.5) * 0.25 }, SPRING);
+  };
+
+  const rotateShape = (el: HTMLElement, px: number, py: number, flip = 1) => {
+    const rx = (py - 0.5) * 40 * flip;
+    const ry = (px - 0.5) * 50 * flip;
+    const isA = el.classList.contains('shape-a');
+    const scale = 1 + (isA ? 0.5 - balance : balance - 0.5) * 0.25;
+    animate(el, { rotateX: rx, rotateY: ry, rotateZ: ry * 0.15, scale }, { ...SPRING, duration: 0.35 } as any);
   };
 
   stage.addEventListener('pointermove', (e) => {
@@ -85,6 +93,8 @@ function createDuel(stage: HTMLElement): Stage {
     balance = Math.min(0.92, Math.max(0.08, p.x / p.w));
     bend = (p.y - p.h / 2) * 1.1;
     moveSpark();
+    rotateShape(shapeA, 1 - p.x / p.w, p.y / p.h, 1);
+    rotateShape(shapeB, p.x / p.w, p.y / p.h, -1);
   });
 
   stage.addEventListener('pointerleave', () => {
@@ -96,8 +106,8 @@ function createDuel(stage: HTMLElement): Stage {
   stage.addEventListener('click', (e) => {
     const p = localPoint(e, stage);
     ripple(stage, p.x, p.y);
-    const target = p.x < p.w / 2 ? orbA : orbB;
-    balance = target === orbA ? 0.08 : 0.92;
+    const target = p.x < p.w / 2 ? shapeA : shapeB;
+    balance = target === shapeA ? 0.08 : 0.92;
     moveSpark({ type: 'spring', stiffness: 320, damping: 14 } as any);
     animate(target, { scale: [1.35, 0.9, 1.15] }, { duration: 0.6, ease: EASE });
     const r = target.getBoundingClientRect();
@@ -112,8 +122,8 @@ function createDuel(stage: HTMLElement): Stage {
       bend = 0;
       balance = 0.5;
       const { px, py } = draw();
-      animate(orbA, { x: [-120, 0], opacity: [0, 1], scale: [0.6, 1] }, SPRING);
-      animate(orbB, { x: [120, 0], opacity: [0, 1], scale: [0.6, 1] }, SPRING);
+      animate(shapeA, { x: [-120, 0], opacity: [0, 1], scale: [0.6, 1], rotateY: [-60, 0] }, SPRING);
+      animate(shapeB, { x: [120, 0], opacity: [0, 1], scale: [0.6, 1], rotateY: [60, 0] }, SPRING);
       animate(spark, { x: px, y: py, scale: [0, 1.6, 1], opacity: [0, 1] }, { duration: 0.9, delay: 0.35, ease: EASE });
       const length = beam.getTotalLength?.() || 600;
       animate(glow, { strokeDasharray: [`0 ${length}`, `${length} 0`] } as any, { duration: 0.9, ease: EASE });
@@ -146,19 +156,43 @@ function createBalance(stage: HTMLElement): Stage {
     return Math.max(-10, Math.min(10, (scoreB - scoreA) * 4));
   };
 
-  const tilt = (deg: number, opts: object = SPRING) => animate(rig, { '--tilt': `${deg}deg` } as any, opts);
+  const panScale = (shape: HTMLElement) => (shape.closest('.pan-dish') ? 0.72 : 1);
+
+  const tilt = (deg: number, opts: object = SPRING) => {
+    animate(rig, { '--tilt': `${deg}deg` } as any, opts);
+    animate(rig, { rotateY: deg * 0.6, rotateX: Math.abs(deg) * 0.25 } as any, { ...opts, duration: 0.45 } as any);
+  };
 
   stage.addEventListener('pointermove', (e) => {
     const p = localPoint(e, rig);
     if (p.x < 0 || p.x > p.w) return;
-    tilt((p.x / p.w - 0.5) * 36);
+    const deg = (p.x / p.w - 0.5) * 36;
+    tilt(deg);
+    const shapes = rig.querySelectorAll<HTMLElement>('.shape');
+    shapes.forEach((shape, i) => {
+      const flip = i === 0 ? 1 : -1;
+      animate(shape, { rotateY: deg * flip * 1.2, rotateX: (p.y / p.h - 0.5) * -30, scale: panScale(shape) }, {
+        ...SPRING,
+        duration: 0.4,
+      } as any);
+    });
   });
-  stage.addEventListener('pointerleave', () => tilt(restingTilt(), { type: 'spring', stiffness: 70, damping: 8 }));
+  stage.addEventListener('pointerleave', () => {
+    tilt(restingTilt(), { type: 'spring', stiffness: 70, damping: 8 });
+    rig
+      .querySelectorAll<HTMLElement>('.shape')
+      .forEach((shape) => animate(shape, { rotateY: 0, rotateX: 0, scale: panScale(shape) }, SPRING));
+  });
   stage.addEventListener('click', (e) => {
     const p = localPoint(e, stage);
     ripple(stage, p.x, p.y);
     const pan = stage.querySelector(p.x < rig.getBoundingClientRect().width / 2 + 22 ? '.pan-a' : '.pan-b');
-    if (pan) animate(pan.querySelector('.pan-dish')!, { y: [0, 14, 0] }, { duration: 0.5, ease: EASE });
+    if (pan)
+      animate(
+        pan.querySelector('.pan-dish')!,
+        { y: [0, 14, 0], rotateZ: [0, 8, -8, 0] },
+        { duration: 0.6, ease: EASE }
+      );
   });
 
   panel.addEventListener('pointerover', (e) => {
@@ -216,16 +250,33 @@ function createQuestions(stage: HTMLElement): Stage {
   const panel = stage.closest('.tab-panel')!;
 
   stage.addEventListener('pointermove', (e) => {
+    const p = localPoint(e, stage);
     glyphs.forEach((g) => {
       const r = g.getBoundingClientRect();
-      const dx = e.clientX - (r.left + r.width / 2);
-      const dy = e.clientY - (r.top + r.height / 2);
+      const stageR = stage.getBoundingClientRect();
+      const cx = r.left - stageR.left + r.width / 2;
+      const cy = r.top - stageR.top + r.height / 2;
+      const dx = p.x - cx;
+      const dy = p.y - cy;
       const dist = Math.hypot(dx, dy);
-      const lean = Math.max(-40, Math.min(40, (dx / 6) * Math.max(0.2, 1 - dist / 500)));
-      animate(g, { rotate: lean, scale: 1 + Math.max(0, 1 - dist / 180) * 0.6 }, SPRING);
+      const leanY = Math.max(-40, Math.min(40, (dx / 6) * Math.max(0.2, 1 - dist / 500)));
+      const leanX = Math.max(-25, Math.min(25, (dy / 8) * Math.max(0.2, 1 - dist / 500)));
+      const depth = (parseFloat(g.style.getPropertyValue('--i') || '0') % 5) - 2;
+      animate(
+        g,
+        {
+          rotateY: leanY,
+          rotateX: -leanX,
+          translateZ: depth * 18,
+          scale: 1 + Math.max(0, 1 - dist / 180) * 0.6,
+        },
+        SPRING
+      );
     });
   });
-  stage.addEventListener('pointerleave', () => animate(glyphs, { rotate: 0, scale: 1 }, SOFT));
+  stage.addEventListener('pointerleave', () =>
+    animate(glyphs, { rotateY: 0, rotateX: 0, translateZ: 0, scale: 1 }, SOFT)
+  );
   stage.addEventListener('click', (e) => {
     const p = localPoint(e, stage);
     ripple(stage, p.x, p.y);
@@ -237,7 +288,7 @@ function createQuestions(stage: HTMLElement): Stage {
       const glyph = glyphs[i % glyphs.length];
       glyph.classList.toggle('lit', item.open);
       if (!item.open) return;
-      animate(glyph, { scale: [1, 1.9, 1.25], rotate: [0, 360] }, { duration: 0.7, ease: EASE });
+      animate(glyph, { scale: [1, 1.9, 1.25], rotateY: [0, 360], rotateX: [0, 180] }, { duration: 0.8, ease: EASE });
       const answer = item.querySelector('p');
       if (answer)
         animate(answer, { opacity: [0, 1], y: [-8, 0] }, { duration: 0.4, ease: EASE }).then(() =>
@@ -269,7 +320,7 @@ function createNetwork(stage: HTMLElement): Stage {
   const canvas = stage.querySelector<HTMLCanvasElement>('.network-canvas')!;
   const ctx = canvas.getContext('2d')!;
   const panel = stage.closest('.tab-panel')!;
-  type Node = { x: number; y: number; vx: number; vy: number; r: number; hue: number };
+  type Node = { x: number; y: number; z: number; vz: number; vx: number; vy: number; r: number; hue: number };
   const nodes: Node[] = [];
   const pointer = { x: -999, y: -999, active: false };
   let w = 0;
@@ -292,6 +343,8 @@ function createNetwork(stage: HTMLElement): Stage {
     nodes.push({
       x,
       y,
+      z: (Math.random() - 0.5) * 80,
+      vz: (Math.random() - 0.5) * 0.6,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
       r: 1.6 + Math.random() * 2.4,
@@ -313,32 +366,39 @@ function createNetwork(stage: HTMLElement): Stage {
       if (pointer.active) {
         const dx = pointer.x - n.x;
         const dy = pointer.y - n.y;
+        const dz = -n.z * 0.02;
         const d = Math.hypot(dx, dy);
         if (d < 150 && d > 1) {
           n.vx += (dx / d) * 0.03;
           n.vy += (dy / d) * 0.03;
+          n.vz += dz;
         }
       }
       n.vx *= 0.985;
       n.vy *= 0.985;
+      n.vz *= 0.97;
       if (Math.hypot(n.vx, n.vy) < 0.12) {
         n.vx += (Math.random() - 0.5) * 0.05;
         n.vy += (Math.random() - 0.5) * 0.05;
       }
       n.x += n.vx;
       n.y += n.vy;
+      n.z += n.vz;
+      n.z = Math.max(-60, Math.min(60, n.z));
       if (n.x < 0 || n.x > w) n.vx *= -1;
       if (n.y < 0 || n.y > h) n.vy *= -1;
       n.x = Math.max(0, Math.min(w, n.x));
       n.y = Math.max(0, Math.min(h, n.y));
     }
+    // Draw connections first so dots sit on top.
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
         const a = nodes[i];
         const b = nodes[j];
         const d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (d < 90) {
-          ctx.strokeStyle = color(a, (1 - d / 90) * 0.35);
+        const depthFade = 1 - Math.abs(a.z - b.z) / 120;
+        if (d < 90 && depthFade > 0) {
+          ctx.strokeStyle = color(a, (1 - d / 90) * 0.35 * depthFade);
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
@@ -358,9 +418,14 @@ function createNetwork(stage: HTMLElement): Stage {
           ctx.stroke();
         }
       }
-      ctx.fillStyle = color(n, 0.85);
+    }
+    // Draw nodes sorted back-to-front for pseudo-3D.
+    const sorted = [...nodes].sort((a, b) => a.z - b.z);
+    for (const n of sorted) {
+      const scale = 0.7 + ((n.z + 60) / 120) * 0.7;
+      ctx.fillStyle = color(n, 0.6 + ((n.z + 60) / 120) * 0.35);
       ctx.beginPath();
-      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.arc(n.x, n.y, n.r * scale, 0, Math.PI * 2);
       ctx.fill();
     }
     if (pointer.active) {

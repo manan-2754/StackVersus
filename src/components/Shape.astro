@@ -1,0 +1,45 @@
+---
+export interface Props {
+  shape: string;
+  initials: string;
+}
+
+const { shape, initials } = Astro.props;
+---
+
+{
+  shape === 'cube' && (
+    <>
+      <span class="face face-front">{initials}</span>
+      <span class="face face-back" />
+      <span class="face face-right" />
+      <span class="face face-left" />
+      <span class="face face-top" />
+      <span class="face face-bottom" />
+    </>
+  )
+}
+
+{
+  shape === 'layer' && (
+    <>
+      <span class="layer layer-1" />
+      <span class="layer layer-2" />
+      <span class="layer layer-3" />
+      <span class="layer-initials">{initials}</span>
+    </>
+  )
+}
+
+{
+  shape === 'ring' && (
+    <>
+      <span class="ring ring-1" />
+      <span class="ring ring-2" />
+      <span class="ring ring-3" />
+      <span class="ring-initials">{initials}</span>
+    </>
+  )
+}
+
+{!['cube', 'layer', 'ring'].includes(shape) && <span class="mono-initials">{initials}</span>}

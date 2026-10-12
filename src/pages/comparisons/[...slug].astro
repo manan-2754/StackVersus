@@ -281,7 +281,7 @@ function toolSlug(name: string) {
 
     <main class="editorial-workspace" id="main-content">
       <section class="tab-panel active" data-panel="overview" role="tabpanel">
-        <TabStage kind="overview" toolA={toolA} toolB={toolB} />
+        <TabStage kind="overview" toolA={toolA} toolB={toolB} category={currentCategory} />
         {
           tocHeadings.length > 0 && (
             <nav class="toc" aria-label="Table of contents">
@@ -302,7 +302,7 @@ function toolSlug(name: string) {
       </section>
 
       <section class="tab-panel" data-panel="specs" role="tabpanel">
-        <TabStage kind="specs" toolA={toolA} toolB={toolB} />
+        <TabStage kind="specs" toolA={toolA} toolB={toolB} category={currentCategory} />
         <h2 class="panel-title">Specification Matrix</h2>
         <div class="comparison-matrix" id="comparison-matrix">
           <p class="panel-hint">The matrix is generated from the pros/cons in the article.</p>
@@ -335,7 +335,7 @@ function toolSlug(name: string) {
       </section>
 
       <section class="tab-panel" data-panel="faq" role="tabpanel">
-        <TabStage kind="faq" toolA={toolA} toolB={toolB} />
+        <TabStage kind="faq" toolA={toolA} toolB={toolB} category={currentCategory} />
         <h2 class="panel-title">Frequently Asked Questions</h2>
         {
           faqs.length > 0 ? (
@@ -354,7 +354,7 @@ function toolSlug(name: string) {
       </section>
 
       <section class="tab-panel" data-panel="community" role="tabpanel">
-        <TabStage kind="community" toolA={toolA} toolB={toolB} />
+        <TabStage kind="community" toolA={toolA} toolB={toolB} category={currentCategory} />
         <div class="community-grid">
           <div>
             <h2 class="panel-title">Share & Discuss</h2>
